@@ -465,7 +465,7 @@
     <div class="photo-area" id="photoArea">
       <div class="photo-empty" id="photoEmpty">
         <div class="photo-icon">＋</div>
-        <p>Tap below to take or upload a photo</p>
+        <p>Use your camera or pick from gallery</p>
         <p class="sub">Best for fresh fruits, vegetables &amp; common dishes</p>
       </div>
       <img id="photoPreview" alt="" style="display:none">
@@ -475,8 +475,10 @@
       </div>
     </div>
     <div class="photo-actions">
-      <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
-      <button class="btn btn-primary" id="photoBtn">📷 Take or upload photo</button>
+      <input type="file" id="photoInputCamera" accept="image/*" capture="environment" style="display:none">
+      <input type="file" id="photoInputGallery" accept="image/*" style="display:none">
+      <button class="btn btn-primary" id="cameraBtn">📷 Camera</button>
+      <button class="btn btn-primary" id="galleryBtn">🖼 Gallery</button>
       <button class="btn btn-secondary" id="photoClearBtn" disabled>Clear</button>
     </div>
   </div>
@@ -1770,8 +1772,10 @@ const tabBarcode = $('tabBarcode');
 const tabPhoto = $('tabPhoto');
 const modeBarcode = $('modeBarcode');
 const modePhoto = $('modePhoto');
-const photoBtn = $('photoBtn');
-const photoInput = $('photoInput');
+const cameraBtn = $('cameraBtn');
+const galleryBtn = $('galleryBtn');
+const photoInputCamera = $('photoInputCamera');
+const photoInputGallery = $('photoInputGallery');
 const photoClearBtn = $('photoClearBtn');
 const photoPreview = $('photoPreview');
 const photoEmpty = $('photoEmpty');
@@ -1797,12 +1801,15 @@ function switchMode(mode) {
 tabBarcode.addEventListener('click', () => switchMode('barcode'));
 tabPhoto.addEventListener('click', () => switchMode('photo'));
 
-photoBtn.addEventListener('click', () => photoInput.click());
-photoInput.addEventListener('change', handlePhotoFile);
+cameraBtn.addEventListener('click', () => photoInputCamera.click());
+galleryBtn.addEventListener('click', () => photoInputGallery.click());
+photoInputCamera.addEventListener('change', handlePhotoFile);
+photoInputGallery.addEventListener('change', handlePhotoFile);
 photoClearBtn.addEventListener('click', clearPhoto);
 
 function clearPhoto() {
-  photoInput.value = '';
+  photoInputCamera.value = '';
+  photoInputGallery.value = '';
   photoPreview.src = '';
   photoPreview.style.display = 'none';
   photoEmpty.style.display = '';
