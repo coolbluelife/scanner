@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>SCAN — Product Insights</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+<style>
+  :root{
+    --bg:#0d0c0a;
+    --paper:#f5f1e8;
+    --ink:#171510;
+    --accent:#ff4a1c;
+    --green:#00b67a;
+    --green-light:#8bc34a;
+    --yellow:#f5b800;
+    --orange:#fb8c00;
+    --red:#e53935;
+    --muted:#8a8377;
+    --line:rgba(23,21,16,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--paper);font-family:'Fraunces',serif;min-height:100vh;overflow-x:hidden}
+  body{
+    background:radial-gradient(ellipse at top, #1a1812 0%, #0d0c0a 60%), var(--bg);
+    background-attachment:fixed;
+  }
+  .grain::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:100;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .app{max-width:520px;margin:0 auto;padding:24px 20px 80px;position:relative}
+
+  header{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:18px;border-bottom:1px solid rgba(245,241,232,.15);margin-bottom:24px}
+  .logo{font-family:'Fraunces',serif;font-weight:800;font-size:32px;letter-spacing:-0.04em;font-style:italic}
+  .logo span{color:var(--accent)}
+  .meta{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);text-align:right;line-height:1.5}
+
+  .hero{padding:8px 0 28px}
+  .hero h1{font-family:'Fraunces',serif;font-weight:300;font-size:44px;line-height:1.02;letter-spacing:-0.035em}
+  .hero h1 em{font-style:italic;font-weight:600;color:var(--accent)}
+  .hero p{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.18em;color:var(--muted);margin-top:14px}
+
+  .notice{
+    background:rgba(245,184,0,.08);border:1px solid rgba(245,184,0,.3);
+    color:#ffd966;padding:14px 16px;border-radius:4px;margin-bottom:20px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;letter-spacing:0.02em;
+  }
+  .notice strong{color:#ffec99}
+  .notice code{background:rgba(0,0,0,.3);padding:1px 6px;border-radius:2px;font-size:10px}
+
+  .scanner-wrap{
+    position:relative;background:var(--paper);color:var(--ink);
+    border-radius:4px;overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(245,241,232,.05);
+  }
+  .scanner{
+    position:relative;aspect-ratio:4/3;background:#1a1812;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #video{width:100%;height:100%;object-fit:cover;display:block}
+  .scanner-placeholder{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;color:var(--paper);text-align:center;padding:20px;
+    pointer-events:none;
+  }
+  .scanner-icon{font-size:48px;margin-bottom:16px;font-family:'Fraunces',serif;font-style:italic;font-weight:300}
+  .scanner-placeholder p{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,241,232,.6)}
+
+  .scan-frame{
+    position:absolute;left:12%;right:12%;top:30%;bottom:30%;
+    pointer-events:none;
+  }
+  .scan-frame .corner{position:absolute;width:24px;height:24px;border:2px solid var(--accent)}
+  .scan-frame .tl{top:0;left:0;border-right:0;border-bottom:0}
+  .scan-frame .tr{top:0;right:0;border-left:0;border-bottom:0}
+  .scan-frame .bl{bottom:0;left:0;border-right:0;border-top:0}
+  .scan-frame .br{bottom:0;right:0;border-left:0;border-top:0}
+
+  .scan-line{
+    position:absolute;left:12%;right:12%;height:2px;background:var(--accent);
+    box-shadow:0 0 8px var(--accent);top:50%;display:none;
+    animation:sweep 2s ease-in-out infinite;pointer-events:none;
+  }
+  .scanning .scan-line{display:block}
+  @keyframes sweep{0%,100%{top:32%}50%{top:68%}}
+
+  .scanner-actions{
+    padding:18px 20px;display:flex;gap:10px;align-items:center;
+    border-top:1px solid var(--line);background:var(--paper);
+  }
+  .btn{
+    flex:1;font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:0.15em;text-transform:uppercase;padding:14px 16px;
+    border:none;border-radius:2px;cursor:pointer;transition:transform .15s, opacity .15s;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:var(--ink);color:var(--paper)}
+  .btn-secondary{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+
+  .manual{margin-top:16px;padding:18px;background:rgba(245,241,232,.04);border:1px solid rgba(245,241,232,.1);border-radius:4px}
+  .manual label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px}
+  .manual-row{display:flex;gap:8px}
+  .manual input{
+    flex:1;min-width:0;background:transparent;border:1px solid rgba(245,241,232,.2);color:var(--paper);
+    padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:14px;
+    letter-spacing:0.05em;border-radius:2px;outline:none;
+  }
+  .manual input:focus{border-color:var(--accent)}
+  .manual button{
+    background:var(--paper);color:var(--ink);border:none;padding:0 18px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;
+    text-transform:uppercase;cursor:pointer;border-radius:2px;white-space:nowrap;
+  }
+  .manual button:active{transform:scale(.97)}
+
+  .samples{margin-top:20px}
+  .samples-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .sample-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;
+    padding:8px 12px;background:rgba(245,241,232,.06);border:1px solid rgba(245,241,232,.12);
+    color:var(--paper);border-radius:2px;cursor:pointer;text-transform:uppercase;
+    transition:background .2s, border-color .2s;
+  }
+  .chip:hover,.chip:active{background:rgba(255,74,28,.15);border-color:var(--accent)}
+
+  .result{
+    margin-top:28px;background:var(--paper);color:var(--ink);
+    border-radius:4px;overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+    animation:slideUp .5s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .result-head{padding:24px 22px 18px;border-bottom:1px solid var(--line);position:relative;min-height:120px}
+  .barcode-num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase}
+  .product-name{font-family:'Fraunces',serif;font-weight:600;font-size:26px;line-height:1.15;letter-spacing:-0.02em;margin-top:8px;word-wrap:break-word}
+  .product-brand{font-family:'Fraunces',serif;font-style:italic;font-size:15px;color:var(--muted);margin-top:6px}
+  .category-tag{
+    display:inline-block;margin-top:14px;padding:4px 10px;background:var(--ink);color:var(--paper);
+    font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;border-radius:2px;
+  }
+  .product-img{
+    width:84px;height:84px;border-radius:2px;background:rgba(23,21,16,.04);
+    position:absolute;top:22px;right:22px;object-fit:contain;padding:6px;
+    border:1px solid var(--line);
+  }
+  .has-image .product-name,.has-image .product-brand{padding-right:100px}
+
+  .scores{display:flex;gap:10px;padding:22px;border-bottom:1px solid var(--line)}
+  .score-card{flex:1;text-align:center;min-width:0}
+  .score-ring{position:relative;width:84px;height:84px;margin:0 auto 10px}
+  .score-ring svg{transform:rotate(-90deg)}
+  .score-value{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:600;font-size:24px;letter-spacing:-0.02em;
+  }
+  .score-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted)}
+  .grade-A{color:var(--green)}
+  .grade-B{color:var(--green-light)}
+  .grade-C{color:var(--yellow)}
+  .grade-D{color:var(--orange)}
+  .grade-E{color:var(--red)}
+  .grade-unknown{color:var(--muted)}
+
+  .section{padding:22px;border-bottom:1px solid var(--line)}
+  .section:last-child{border-bottom:none}
+  .section-title{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:14px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .section-title::before{content:"";width:18px;height:1px;background:var(--ink)}
+  .insight-list{list-style:none;display:flex;flex-direction:column;gap:12px}
+  .insight-item{
+    display:flex;gap:12px;align-items:flex-start;
+    font-family:'Fraunces',serif;font-size:15px;line-height:1.45;
+  }
+  .insight-dot{flex-shrink:0;width:8px;height:8px;border-radius:50%;margin-top:7px;background:var(--ink)}
+  .insight-dot.good{background:var(--green)}
+  .insight-dot.warn{background:var(--yellow)}
+  .insight-dot.bad{background:var(--red)}
+
+  .nutri-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+  .nutri-cell{background:var(--paper);padding:14px}
+  .nutri-key{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted)}
+  .nutri-val{font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin-top:4px;letter-spacing:-0.02em}
+  .nutri-val small{font-size:12px;font-weight:400;color:var(--muted);font-style:italic}
+
+  .ai-summary{background:var(--ink);color:var(--paper);padding:24px 22px;position:relative}
+  .ai-summary .section-title{color:rgba(245,241,232,.5)}
+  .ai-summary .section-title::before{background:var(--accent)}
+  .ai-text{font-family:'Fraunces',serif;font-size:17px;line-height:1.5;font-weight:300}
+  .ai-text em{font-style:italic;color:var(--accent);font-weight:400}
+
+  .loading{padding:60px 20px;text-align:center;color:var(--paper)}
+  .loading-dots{display:inline-flex;gap:6px;margin-bottom:18px}
+  .loading-dots span{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.2s ease-in-out infinite}
+  .loading-dots span:nth-child(2){animation-delay:.15s}
+  .loading-dots span:nth-child(3){animation-delay:.3s}
+  @keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1.2)}}
+  .loading-text{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted)}
+
+  .error{
+    margin-top:20px;background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.3);
+    color:#ffaaa5;padding:16px 18px;border-radius:4px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.02em;line-height:1.6;
+  }
+  .error strong{color:#fff}
+  .error code{background:rgba(0,0,0,.3);padding:1px 6px;border-radius:2px;font-size:11px}
+
+  .allergen-pill{
+    background:#fef0eb;color:#c2410c;padding:5px 10px;
+    font-family:'JetBrains Mono',monospace;font-size:10px;
+    letter-spacing:0.1em;text-transform:uppercase;border-radius:2px;
+  }
+  .allergens-row{display:flex;flex-wrap:wrap;gap:6px}
+
+  .badge-pill{
+    padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;
+    letter-spacing:0.1em;text-transform:uppercase;border-radius:2px;
+    border:1px solid transparent;
+  }
+  .badge-pill.good{background:rgba(0,182,122,.1);color:#00754f;border-color:rgba(0,182,122,.25)}
+  .badge-pill.warn{background:rgba(245,184,0,.12);color:#8a6700;border-color:rgba(245,184,0,.3)}
+  .badge-pill.bad{background:rgba(229,57,53,.1);color:#a01f1c;border-color:rgba(229,57,53,.25)}
+
+  .detail-val{font-family:'Fraunces',serif;font-size:14px;font-weight:500;margin-top:4px;line-height:1.3;color:var(--ink)}
+
+  .ingredient-text{font-family:'Fraunces',serif;font-size:14px;line-height:1.5;color:#3a362d;word-wrap:break-word}
+
+  .footer-mark{text-align:center;margin-top:40px;font-family:'Fraunces',serif;font-style:italic;font-weight:300;font-size:12px;color:var(--muted);letter-spacing:0.08em}
+  .footer-mark::before,.footer-mark::after{content:"—";margin:0 10px;color:rgba(245,241,232,.2)}
+</style>
+</head>
+<body class="grain">
+<div class="app">
+
+  <header>
+    <div class="logo">scan<span>·</span></div>
+    <div class="meta">v.02 / live<br>product insights engine</div>
+  </header>
+
+  <section class="hero">
+    <h1>Scan it. <em>Know it.</em></h1>
+    <p>// food · cosmetics · everyday goods</p>
+  </section>
+
+  <div id="cameraNotice" style="display:none" class="notice">
+    <strong id="cameraNoticeTitle">Heads up:</strong> <span id="cameraNoticeBody"></span>
+  </div>
+
+  <div class="scanner-wrap">
+    <div class="scanner" id="scanner">
+      <video id="video" playsinline muted style="display:none"></video>
+      <div class="scanner-placeholder" id="placeholder">
+        <div class="scanner-icon">⌐</div>
+        <p>Tap start to scan a barcode</p>
+      </div>
+      <div class="scan-frame">
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+      </div>
+      <div class="scan-line"></div>
+    </div>
+    <div class="scanner-actions">
+      <button class="btn btn-primary" id="startBtn">▶ Start camera</button>
+      <button class="btn btn-secondary" id="stopBtn" disabled>■ Stop</button>
+    </div>
+  </div>
+
+  <div class="manual">
+    <label>or enter barcode manually</label>
+    <div class="manual-row">
+      <input type="text" id="manualInput" inputmode="numeric" autocomplete="off" placeholder="e.g. 3017620422003" />
+      <button id="manualBtn">Look up</button>
+    </div>
+  </div>
+
+  <div class="samples">
+    <div class="samples-label">Try a sample →</div>
+    <div class="sample-chips">
+      <button class="chip" data-code="3017620422003">Nutella</button>
+      <button class="chip" data-code="5449000000996">Coca-Cola</button>
+      <button class="chip" data-code="7622210449283">Oreo</button>
+      <button class="chip" data-code="8076809513753">Barilla Pasta</button>
+      <button class="chip" data-code="3068320123264">Evian Water</button>
+    </div>
+  </div>
+
+  <div id="output"></div>
+
+  <div class="footer-mark">scan responsibly</div>
+</div>
+
+<script>
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+const output = $('output');
+const video = $('video');
+const placeholder = $('placeholder');
+const scanner = $('scanner');
+const startBtn = $('startBtn');
+const stopBtn = $('stopBtn');
+
+let codeReader = null;
+let scanHandled = false;
+let mediaStream = null;
+
+// Detect camera support and configure UI accordingly
+function checkCameraSupport() {
+  const proto = location.protocol;
+  const host = location.hostname;
+  const isLocalhost = host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || /\.local$/.test(host);
+  const isSecure = proto === 'https:' || (isLocalhost && proto === 'http:');
+  const isFile = proto === 'file:';
+  const hasMediaDevices = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+  if (isFile) return {
+    ok: false, level: 'block',
+    title: 'Running from a local file.',
+    body: 'Browsers block camera access and external API calls from <code>file://</code> URLs. Either use the sample chips below, or host this file on a local server (<code>python3 -m http.server</code>) and open via <code>http://localhost:8000</code>.'
+  };
+  if (!isSecure) return {
+    ok: false, level: 'block',
+    title: 'Camera needs HTTPS.',
+    body: 'Mobile browsers require <strong>https://</strong> for camera access — plain http won&rsquo;t work. Options: open via <code>localhost</code> for testing, or host on GitHub Pages, Netlify, Vercel, or use an HTTPS tunnel like ngrok. Sample chips work without camera.'
+  };
+  if (!hasMediaDevices) return {
+    ok: false, level: 'block',
+    title: 'Camera API not available.',
+    body: 'Your browser doesn&rsquo;t expose <code>navigator.mediaDevices</code>. Try a recent Chrome, Safari, or Firefox.'
+  };
+  return { ok: true };
+}
+
+const camSupport = checkCameraSupport();
+if (!camSupport.ok) {
+  const notice = $('cameraNotice');
+  notice.style.display = 'block';
+  $('cameraNoticeTitle').textContent = camSupport.title;
+  $('cameraNoticeBody').innerHTML = camSupport.body;
+  startBtn.disabled = true;
+  startBtn.textContent = '⊘ Camera unavailable';
+}
+
+// ---------- Scanner ----------
+async function startScanner() {
+  try {
+    if (typeof ZXing === 'undefined') {
+      throw new Error('Barcode library failed to load. Check your internet connection.');
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('Camera API unavailable. Try a recent Chrome, Safari, or Firefox over HTTPS.');
+    }
+    output.innerHTML = '';
+    placeholder.style.display = 'none';
+    video.style.display = 'block';
+    scanner.classList.add('scanning');
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    scanHandled = false;
+
+    // Request permission explicitly first — this gives a clearer error if denied
+    try {
+      const probe = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false,
+      });
+      // Stop the probe stream so ZXing can open its own with the device id
+      probe.getTracks().forEach(t => t.stop());
+    } catch (permErr) {
+      throw permErr;
+    }
+
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    const devices = await codeReader.listVideoInputDevices();
+    if (!devices || devices.length === 0) {
+      throw new Error('No camera found on this device.');
+    }
+    const rear = devices.find(d => /back|rear|environment/i.test(d.label)) || devices[devices.length - 1];
+
+    await codeReader.decodeFromVideoDevice(rear.deviceId, video, (result) => {
+      if (result && !scanHandled) {
+        scanHandled = true;
+        const code = result.getText();
+        stopScanner();
+        lookupProduct(code);
+      }
+    });
+
+    if (video.srcObject) mediaStream = video.srcObject;
+  } catch (e) {
+    stopScanner();
+    const friendly = friendlyCameraError(e);
+    showError(friendly);
+  }
+}
+
+function friendlyCameraError(e) {
+  const name = e && e.name;
+  const msg = (e && e.message) || String(e);
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+
+  if (name === 'NotAllowedError' || /permission|denied/i.test(msg)) {
+    return `<strong>Camera permission denied.</strong><br><br>` +
+      (isMobile
+        ? `On mobile, tap the <strong>lock icon</strong> (or site settings) in the address bar and allow camera access for this site. Then refresh and try again.<br><br>iOS Safari: Settings → Safari → Camera → Allow. Chrome/Firefox Android: tap ⋮ → Permissions → Camera.`
+        : `Click the camera icon in your browser&rsquo;s address bar and allow access, then try again.`);
+  }
+  if (name === 'NotFoundError' || /no camera|not found/i.test(msg)) {
+    return `<strong>No camera detected.</strong> This device doesn&rsquo;t appear to have a camera available to the browser.`;
+  }
+  if (name === 'NotReadableError' || /in use|busy/i.test(msg)) {
+    return `<strong>Camera is in use.</strong> Close other apps using the camera (FaceTime, Zoom, etc.) and try again.`;
+  }
+  if (name === 'OverconstrainedError') {
+    return `<strong>Camera doesn&rsquo;t support the requested settings.</strong> Try a different browser or device.`;
+  }
+  if (name === 'SecurityError' || /secure context|https/i.test(msg)) {
+    return `<strong>Camera blocked for security.</strong> Camera access requires <code>https://</code> on mobile browsers. Open this page over HTTPS and try again.`;
+  }
+  return `<strong>Camera error:</strong> ${esc(msg)}`;
+}
+
+function stopScanner() {
+  if (codeReader) {
+    try { codeReader.reset(); } catch (e) {}
+    codeReader = null;
+  }
+  if (mediaStream) {
+    try { mediaStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    mediaStream = null;
+  }
+  if (video.srcObject) {
+    try { video.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {}
+    video.srcObject = null;
+  }
+  video.style.display = 'none';
+  placeholder.style.display = 'flex';
+  scanner.classList.remove('scanning');
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+}
+
+startBtn.addEventListener('click', startScanner);
+stopBtn.addEventListener('click', stopScanner);
+
+$('manualBtn').addEventListener('click', handleManual);
+$('manualInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); handleManual(); }
+});
+function handleManual() {
+  const raw = $('manualInput').value.trim();
+  const code = raw.replace(/\D/g, '');
+  if (!code) { showError('Please enter a numeric barcode (e.g. 3017620422003).'); return; }
+  lookupProduct(code);
+}
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', () => lookupProduct(c.dataset.code));
+});
+
+// ---------- Product lookup ----------
+async function fetchWithTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { signal: ctrl.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+async function lookupProduct(code) {
+  showLoading('Decoding ' + code);
+  const endpoints = [
+    { url: `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`, render: renderFoodProduct, category: 'food' },
+    { url: `https://world.openbeautyfacts.org/api/v2/product/${encodeURIComponent(code)}.json`, render: renderBeautyProduct, category: 'beauty' },
+    { url: `https://world.openproductsfacts.org/api/v2/product/${encodeURIComponent(code)}.json`, render: renderGeneralProduct, category: 'general' },
+  ];
+
+  let lastError = null;
+  for (const ep of endpoints) {
+    try {
+      const r = await fetchWithTimeout(ep.url, 8000);
+      if (!r.ok) { lastError = 'HTTP ' + r.status; continue; }
+      const data = await r.json();
+      if (data && data.status === 1 && data.product) {
+        return ep.render(code, data.product);
+      }
+    } catch (e) {
+      lastError = (e && e.name === 'AbortError') ? 'Request timed out' : ((e && e.message) || 'Network error');
+      console.warn('Lookup error for', ep.category, e);
+    }
+  }
+
+  if (lastError) {
+    showError(`Couldn't reach product database. <strong>${esc(lastError)}</strong>.<br><br>If you opened this from a local file, browsers may block API calls. Try hosting it (e.g. <code>python3 -m http.server</code>) or open via HTTPS.`);
+  } else {
+    showError(`No product found for barcode <strong>${esc(code)}</strong>. Open Food Facts didn't have a match. Try a different code — or contribute this one at openfoodfacts.org.`);
+  }
+}
+
+// ---------- Cosmetic ingredient knowledge base ----------
+const COSMETIC_CONCERNING = [
+  { re: /\bphthalat|\bdep\b|\bdbp\b|\bdehp\b/, name: 'Phthalates', desc: 'Plasticizers linked to endocrine disruption.', severity: 3 },
+  { re: /formaldehyde|\bdmdm hydantoin|imidazolidinyl urea|diazolidinyl urea|quaternium-15|bronopol/, name: 'Formaldehyde releasers', desc: 'Preservatives that slowly release formaldehyde, a known carcinogen.', severity: 3 },
+  { re: /triclosan|triclocarban/, name: 'Triclosan', desc: 'Antibacterial agent restricted in many countries.', severity: 3 },
+  { re: /oxybenzone|benzophenone-3/, name: 'Oxybenzone', desc: 'UV filter with hormone-disruption concerns; banned in some reef-protective regions.', severity: 3 },
+  { re: /hydroquinone/, name: 'Hydroquinone', desc: 'Skin lightener restricted or banned in several markets.', severity: 3 },
+  { re: /coal tar/, name: 'Coal tar', desc: 'Listed carcinogen in California Prop 65.', severity: 3 },
+  { re: /toluene/, name: 'Toluene', desc: 'Solvent with neurotoxicity concerns.', severity: 3 },
+  { re: /paraben/, name: 'Parabens', desc: 'Preservatives with weak estrogenic activity.', severity: 2 },
+  { re: /\bsls\b|\bsles\b|sodium laur(yl|eth) sulfate|ammonium laur(yl|eth) sulfate/, name: 'Sulfates (SLS/SLES)', desc: 'Strong surfactants — can be drying for sensitive skin or color-treated hair.', severity: 2 },
+  { re: /octinoxate|ethylhexyl methoxycinnamate/, name: 'Octinoxate', desc: 'Chemical UV filter under regulatory review.', severity: 2 },
+  { re: /methylisothiazolinone|methylchloroisothiazolinone|\bmit\b|\bmci\b/, name: 'MIT / MCI', desc: 'Preservatives flagged as common contact allergens.', severity: 2 },
+  { re: /\bbht\b|butylated hydroxytoluene|\bbha\b(?!.*acid)|butylated hydroxyanisole/, name: 'BHT / BHA', desc: 'Synthetic antioxidants with possible endocrine effects.', severity: 2 },
+  { re: /\btalc\b/, name: 'Talc', desc: 'Mineral with historical asbestos-contamination concerns.', severity: 2 },
+  { re: /\bdea\b|diethanolamine|\btea\b|triethanolamine|\bmea\b|monoethanolamine|cocamide dea|cocamide mea/, name: 'Ethanolamines (DEA/TEA/MEA)', desc: 'Can form nitrosamines under certain conditions.', severity: 2 },
+  { re: /fragrance|parfum/, name: 'Fragrance / Parfum', desc: 'Undisclosed scent mix — a leading cause of cosmetic allergy.', severity: 2 },
+  { re: /(?:^|[\s,])petrolatum|mineral oil|paraffinum liquidum/, name: 'Mineral oil', desc: 'Occlusive petroleum derivative; some prefer to avoid.', severity: 1 },
+  { re: /\bpeg-\d|polyethylene glycol/, name: 'PEGs', desc: 'Penetration enhancers; quality depends on processing.', severity: 1 },
+  { re: /dimethicone|cyclomethicone|cyclotetrasiloxane|cyclopentasiloxane|cyclohexasiloxane/, name: 'Silicones', desc: 'Smoothing agents some prefer to avoid for buildup or environmental reasons.', severity: 1 },
+  { re: /alcohol\s*denat|\bsd alcohol|ethanol\b/, name: 'Denatured alcohol', desc: 'Volatile alcohol — can be drying in leave-on products.', severity: 1 },
+  { re: /\blimonene|\blinalool|\bcitral|\bgeraniol|\beugenol|\bcitronellol|\bfarnesol/, name: 'Fragrance allergens', desc: 'EU-regulated allergens often added for scent.', severity: 1 },
+  { re: /retinol|retinyl|retinaldehyde|retinal\b|tretinoin/, name: 'Retinoids', desc: 'Effective for anti-aging — but increase sun sensitivity. Use SPF.', severity: 1 },
+];
+
+const COSMETIC_BENEFICIAL = [
+  { re: /hyaluron|sodium hyaluronate/, name: 'Hyaluronic acid', desc: 'Holds up to 1000× its weight in water — a hydration workhorse.' },
+  { re: /niacinamide|nicotinamide/, name: 'Niacinamide', desc: 'Strengthens the skin barrier, evens tone, refines pores.' },
+  { re: /ascorbic acid|ascorbyl|tetrahexyldecyl ascorbate|ascorbate/, name: 'Vitamin C', desc: 'Brightening antioxidant; protects against environmental damage.' },
+  { re: /tocopherol|tocopheryl/, name: 'Vitamin E', desc: 'Lipid-soluble antioxidant that pairs well with Vitamin C.' },
+  { re: /ceramide/, name: 'Ceramides', desc: 'Rebuild the skin barrier — essential for dry or compromised skin.' },
+  { re: /peptide|palmitoyl pentapeptide|copper tripeptide|matrixyl/, name: 'Peptides', desc: 'Signal proteins that support collagen and skin firmness.' },
+  { re: /centella asiatica|madecassoside|asiaticoside|\bcica\b/, name: 'Centella / Cica', desc: 'Soothes irritation and supports skin repair.' },
+  { re: /squalane|squalene/, name: 'Squalane', desc: 'Lightweight emollient that mimics skin\'s own lipids.' },
+  { re: /panthenol|pro-vitamin b5|provitamin b5/, name: 'Panthenol (B5)', desc: 'Humectant and soother for compromised skin.' },
+  { re: /allantoin/, name: 'Allantoin', desc: 'Calming, mildly exfoliating, helps with rough texture.' },
+  { re: /salicylic acid|\bbha acid/, name: 'Salicylic acid', desc: 'Oil-soluble BHA — clears pores and reduces breakouts.' },
+  { re: /glycolic acid|lactic acid|mandelic acid|\baha\b/, name: 'AHAs', desc: 'Surface exfoliants that brighten and smooth tone.' },
+  { re: /azelaic acid/, name: 'Azelaic acid', desc: 'Anti-inflammatory; helps redness, acne, and pigmentation.' },
+  { re: /bakuchiol/, name: 'Bakuchiol', desc: 'Plant-based retinol alternative without sun sensitivity.' },
+  { re: /snail secretion|snail filtrate|snail mucin/, name: 'Snail mucin', desc: 'Hydrating and regenerative; popular in K-beauty.' },
+  { re: /aloe barbadensis|aloe vera/, name: 'Aloe vera', desc: 'Soothing and hydrating, gentle on irritated skin.' },
+  { re: /camellia sinensis|green tea|\begcg\b/, name: 'Green tea extract', desc: 'Polyphenol-rich antioxidant with calming properties.' },
+  { re: /zinc oxide|titanium dioxide/, name: 'Mineral UV filters', desc: 'Physical sunscreen agents — broad-spectrum and gentle.' },
+  { re: /(?:^|[\s,])glycerin\b/, name: 'Glycerin', desc: 'Baseline humectant; pulls moisture into the skin.' },
+  { re: /beta-glucan|β-glucan/, name: 'Beta-glucan', desc: 'Deeply hydrating; even more soothing than hyaluronic acid for some.' },
+  { re: /tranexamic acid/, name: 'Tranexamic acid', desc: 'Targets stubborn pigmentation and melasma.' },
+];
+
+function analyzeCosmeticIngredients(text) {
+  const out = { concerning: [], beneficial: [], penalty: 0 };
+  if (!text) return out;
+  const lower = text.toLowerCase();
+  const seen = new Set();
+  for (const item of COSMETIC_CONCERNING) {
+    if (item.re.test(lower) && !seen.has(item.name)) {
+      seen.add(item.name);
+      out.concerning.push(item);
+      out.penalty += item.severity;
+    }
+  }
+  for (const item of COSMETIC_BENEFICIAL) {
+    if (item.re.test(lower) && !seen.has(item.name)) {
+      seen.add(item.name);
+      out.beneficial.push(item);
+    }
+  }
+  return out;
+}
+
+function cleanScoreFromPenalty(p, hasIngredients) {
+  if (!hasIngredients) return '';
+  if (p === 0) return 'a';
+  if (p <= 2) return 'b';
+  if (p <= 4) return 'c';
+  if (p <= 7) return 'd';
+  return 'e';
+}
+
+// ---------- Helpers ----------
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function gradeLetter(g) {
+  if (!g || g === 'unknown' || g === 'not-applicable') return '—';
+  return String(g).toUpperCase();
+}
+function gradeClass(g) {
+  if (!g || g === 'unknown' || g === 'not-applicable') return 'grade-unknown';
+  return 'grade-' + String(g).toUpperCase();
+}
+function pctFromLetter(letter) {
+  const map = { A: 95, B: 78, C: 60, D: 40, E: 20 };
+  return map[(letter || '').toUpperCase()] || 0;
+}
+function novaToClass(nova) {
+  const map = { 1: 'grade-A', 2: 'grade-B', 3: 'grade-D', 4: 'grade-E' };
+  return map[nova] || 'grade-unknown';
+}
+function novaToPct(nova) {
+  const map = { 1: 95, 2: 75, 3: 45, 4: 20 };
+  return map[nova] || 0;
+}
+function num(v) {
+  const n = parseFloat(v);
+  return isFinite(n) ? n : NaN;
+}
+function ringSVG(percent, colorClass) {
+  const r = 36, c = 2 * Math.PI * r;
+  const offset = c - (Math.max(0, Math.min(100, percent)) / 100) * c;
+  const colors = {
+    'grade-A': '#00b67a', 'grade-B': '#8bc34a', 'grade-C': '#f5b800',
+    'grade-D': '#fb8c00', 'grade-E': '#e53935', 'grade-unknown': '#cfc9bb'
+  };
+  const color = colors[colorClass] || '#cfc9bb';
+  return `<svg width="84" height="84" viewBox="0 0 84 84">
+    <circle cx="42" cy="42" r="${r}" stroke="rgba(23,21,16,.08)" stroke-width="6" fill="none"/>
+    <circle cx="42" cy="42" r="${r}" stroke="${color}" stroke-width="6" fill="none"
+      stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
+  </svg>`;
+}
+
+// ---------- Render: Food ----------
+function renderFoodProduct(code, p) {
+  const name = p.product_name || p.product_name_en || p.generic_name || 'Unnamed product';
+  const brand = p.brands || '';
+  const img = p.image_front_small_url || p.image_small_url || '';
+
+  let nutri = String(p.nutriscore_grade || '').toLowerCase();
+  if (nutri === 'not-applicable' || nutri === 'unknown') nutri = '';
+  const nova = num(p.nova_group);
+  let eco = String(p.ecoscore_grade || '').toLowerCase();
+  if (eco === 'not-applicable' || eco === 'unknown') eco = '';
+  const n = p.nutriments || {};
+
+  const insights = buildFoodInsights(p, n);
+  const summary = buildFoodSummary(p, n, nutri, nova);
+
+  const nutriPct = nutri ? pctFromLetter(nutri) : 0;
+  const ecoPct = eco ? pctFromLetter(eco) : 0;
+  const novaPct = !isNaN(nova) ? novaToPct(nova) : 0;
+  const novaClass = !isNaN(nova) ? novaToClass(nova) : 'grade-unknown';
+
+  const allergenTags = Array.isArray(p.allergens_tags) ? p.allergens_tags : [];
+
+  output.innerHTML = `
+    <div class="result ${img ? 'has-image' : ''}">
+      <div class="result-head">
+        ${img ? `<img class="product-img" src="${esc(img)}" alt="" onerror="this.style.display='none'">` : ''}
+        <div class="barcode-num">▮▯▮▯ ${esc(code)}</div>
+        <div class="product-name">${esc(name)}</div>
+        ${brand ? `<div class="product-brand">${esc(brand)}</div>` : ''}
+        <div class="category-tag">Food &amp; Beverage</div>
+      </div>
+
+      <div class="scores">
+        <div class="score-card">
+          <div class="score-ring">
+            ${ringSVG(nutriPct, gradeClass(nutri))}
+            <div class="score-value ${gradeClass(nutri)}">${gradeLetter(nutri)}</div>
+          </div>
+          <div class="score-label">Nutri-Score</div>
+        </div>
+        <div class="score-card">
+          <div class="score-ring">
+            ${ringSVG(novaPct, novaClass)}
+            <div class="score-value ${novaClass}">${!isNaN(nova) ? nova : '—'}</div>
+          </div>
+          <div class="score-label">NOVA Group</div>
+        </div>
+        <div class="score-card">
+          <div class="score-ring">
+            ${ringSVG(ecoPct, gradeClass(eco))}
+            <div class="score-value ${gradeClass(eco)}">${gradeLetter(eco)}</div>
+          </div>
+          <div class="score-label">Eco-Score</div>
+        </div>
+      </div>
+
+      <div class="ai-summary">
+        <div class="section-title">The verdict</div>
+        <div class="ai-text">${summary}</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Health insights</div>
+        <ul class="insight-list">
+          ${insights.map(i => `<li class="insight-item"><span class="insight-dot ${i.tone}"></span><span>${i.text}</span></li>`).join('')}
+        </ul>
+      </div>
+
+      ${renderNutrition(n)}
+
+      ${p.ingredients_text ? `
+      <div class="section">
+        <div class="section-title">Ingredients</div>
+        <div class="ingredient-text">${esc(p.ingredients_text)}</div>
+      </div>` : ''}
+
+      ${allergenTags.length ? `
+      <div class="section">
+        <div class="section-title">Allergens</div>
+        <div class="allergens-row">
+          ${allergenTags.map(a => `<span class="allergen-pill">${esc(String(a).replace(/^en:/, '').replace(/-/g, ' '))}</span>`).join('')}
+        </div>
+      </div>` : ''}
+    </div>
+  `;
+  output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function buildFoodInsights(p, n) {
+  const out = [];
+  const sugar = num(n.sugars_100g);
+  const salt = num(n.salt_100g);
+  const sat = num(n['saturated-fat_100g']);
+  const fiber = num(n.fiber_100g);
+  const protein = num(n.proteins_100g);
+
+  if (!isNaN(sugar)) {
+    if (sugar > 22.5) out.push({ tone: 'bad', text: `<strong>High sugar</strong> — ${sugar.toFixed(1)}g per 100g exceeds the 22.5g threshold. Best as an occasional treat.` });
+    else if (sugar > 5) out.push({ tone: 'warn', text: `Moderate sugar at ${sugar.toFixed(1)}g per 100g.` });
+    else out.push({ tone: 'good', text: `<strong>Low sugar</strong> — only ${sugar.toFixed(1)}g per 100g.` });
+  }
+  if (!isNaN(salt)) {
+    if (salt > 1.5) out.push({ tone: 'bad', text: `<strong>High salt</strong> — ${salt.toFixed(2)}g per 100g. Watch portions if monitoring sodium.` });
+    else if (salt > 0.3) out.push({ tone: 'warn', text: `Moderate salt at ${salt.toFixed(2)}g per 100g.` });
+    else out.push({ tone: 'good', text: `<strong>Low salt</strong> — ${salt.toFixed(2)}g per 100g.` });
+  }
+  if (!isNaN(sat)) {
+    if (sat > 5) out.push({ tone: 'bad', text: `<strong>High saturated fat</strong> — ${sat.toFixed(1)}g per 100g may impact cholesterol.` });
+    else if (sat > 1.5) out.push({ tone: 'warn', text: `Moderate saturated fat at ${sat.toFixed(1)}g.` });
+  }
+  if (!isNaN(fiber) && fiber >= 3) {
+    out.push({ tone: 'good', text: `<strong>Good fiber source</strong> — ${fiber.toFixed(1)}g per 100g supports digestion.` });
+  }
+  if (!isNaN(protein) && protein >= 10) {
+    out.push({ tone: 'good', text: `<strong>Protein-rich</strong> — ${protein.toFixed(1)}g per 100g.` });
+  }
+
+  const nova = num(p.nova_group);
+  if (nova === 4) out.push({ tone: 'bad', text: `<strong>Ultra-processed</strong> (NOVA 4). Frequent consumption is linked to higher health risks in research.` });
+  else if (nova === 1) out.push({ tone: 'good', text: `<strong>Unprocessed or minimally processed</strong> (NOVA 1) — closest to whole food.` });
+
+  const additives = num(p.additives_n);
+  if (!isNaN(additives)) {
+    if (additives === 0) out.push({ tone: 'good', text: `No additives detected.` });
+    else if (additives >= 5) out.push({ tone: 'warn', text: `Contains <strong>${additives} additives</strong>. Check ingredients for any you avoid.` });
+    else out.push({ tone: 'warn', text: `Contains ${additives} additive${additives > 1 ? 's' : ''}.` });
+  }
+
+  const labels = Array.isArray(p.labels_tags) ? p.labels_tags : [];
+  if (labels.includes('en:organic')) out.push({ tone: 'good', text: `Certified <strong>organic</strong>.` });
+  if (labels.includes('en:fair-trade')) out.push({ tone: 'good', text: `<strong>Fair-trade</strong> certified.` });
+  if (labels.includes('en:vegan')) out.push({ tone: 'good', text: `Labeled <strong>vegan</strong>.` });
+
+  if (out.length === 0) out.push({ tone: '', text: 'Limited nutritional data available for this product.' });
+  return out;
+}
+
+function buildFoodSummary(p, n, nutri, nova) {
+  const rawName = p.product_name || 'This product';
+  const name = esc(rawName.split(',')[0]);
+  const sugar = num(n.sugars_100g);
+  let verdict, qual;
+  if (nutri === 'a' || nutri === 'b') {
+    verdict = `<em>A solid pick.</em> ${name} scores well on nutrition`;
+    qual = nutri === 'a' ? ' and can be a regular part of a balanced diet.' : ' — fine for everyday eating in normal portions.';
+  } else if (nutri === 'c') {
+    verdict = `<em>Middle of the road.</em> ${name} is okay in moderation`;
+    qual = ' — not a daily staple, but no major red flags.';
+  } else if (nutri === 'd' || nutri === 'e') {
+    verdict = `<em>Treat it as a treat.</em> ${name} is nutritionally heavy`;
+    qual = !isNaN(sugar) && sugar > 20 ? ` — that ${sugar.toFixed(0)}g of sugar per 100g adds up fast.` : ' — best enjoyed occasionally rather than daily.';
+  } else {
+    verdict = `${name} doesn&rsquo;t have a Nutri-Score on file`;
+    qual = ', so judge it by the ingredients and nutrition table below.';
+  }
+  if (nova === 4) qual += ' Heads up — it&rsquo;s classified ultra-processed.';
+  return verdict + qual;
+}
+
+function renderNutrition(n) {
+  const rows = [
+    ['Energy', n['energy-kcal_100g'], 'kcal'],
+    ['Fat', n.fat_100g, 'g'],
+    ['Saturated', n['saturated-fat_100g'], 'g'],
+    ['Carbs', n.carbohydrates_100g, 'g'],
+    ['Sugars', n.sugars_100g, 'g'],
+    ['Fiber', n.fiber_100g, 'g'],
+    ['Protein', n.proteins_100g, 'g'],
+    ['Salt', n.salt_100g, 'g'],
+  ].map(([k, v, u]) => [k, num(v), u]).filter(([, v]) => !isNaN(v));
+  if (rows.length === 0) return '';
+  return `
+  <div class="section">
+    <div class="section-title">Nutrition (per 100g)</div>
+    <div class="nutri-grid">
+      ${rows.map(([k, v, u]) => `
+        <div class="nutri-cell">
+          <div class="nutri-key">${esc(k)}</div>
+          <div class="nutri-val">${v < 10 && v > 0 ? v.toFixed(1) : v.toFixed(0)}<small> ${esc(u)}</small></div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+// ---------- Render: Beauty ----------
+function renderBeautyProduct(code, p) {
+  const name = p.product_name || p.product_name_en || p.generic_name || 'Unnamed product';
+  const brand = p.brands || '';
+  const img = p.image_front_small_url || p.image_small_url || '';
+  const ingredients = p.ingredients_text || p.ingredients_text_en || '';
+
+  const analysis = analyzeCosmeticIngredients(ingredients);
+  const clean = cleanScoreFromPenalty(analysis.penalty, !!ingredients);
+  let eco = String(p.ecoscore_grade || '').toLowerCase();
+  if (eco === 'not-applicable' || eco === 'unknown') eco = '';
+  const activeCount = analysis.beneficial.length;
+
+  const cleanPct = clean ? pctFromLetter(clean) : 0;
+  const ecoPct = eco ? pctFromLetter(eco) : 0;
+  const actPct = Math.min(activeCount / 6, 1) * 100;
+  const actClass = activeCount >= 3 ? 'grade-A' : activeCount >= 1 ? 'grade-C' : 'grade-unknown';
+
+  // Product details
+  const category = p.categories ? p.categories.split(',')[0].trim() : '';
+  const quantity = p.quantity || '';
+  const country = (p.countries || '').split(',').slice(0, 2).join(', ');
+  const pao = formatPAO(p.periods_after_opening);
+  const packaging = p.packaging ? p.packaging.split(',')[0].trim() : '';
+
+  // Analysis tags from API (vegan, palm-oil-free, etc.)
+  const analysisTags = Array.isArray(p.ingredients_analysis_tags) ? p.ingredients_analysis_tags : [];
+  const labelTags = Array.isArray(p.labels_tags) ? p.labels_tags : [];
+  const badges = buildBeautyBadges(analysisTags, labelTags);
+
+  const summary = buildBeautySummary(clean, analysis, name);
+
+  const detailRows = [
+    category && ['Category', category],
+    quantity && ['Size', quantity],
+    country && ['Origin', country],
+    pao && ['Use within', pao + ' after opening'],
+    packaging && ['Packaging', packaging],
+  ].filter(Boolean);
+
+  output.innerHTML = `
+    <div class="result ${img ? 'has-image' : ''}">
+      <div class="result-head">
+        ${img ? `<img class="product-img" src="${esc(img)}" alt="" onerror="this.style.display='none'">` : ''}
+        <div class="barcode-num">▮▯▮▯ ${esc(code)}</div>
+        <div class="product-name">${esc(name)}</div>
+        ${brand ? `<div class="product-brand">${esc(brand)}</div>` : ''}
+        <div class="category-tag">Beauty &amp; Personal Care</div>
+      </div>
+
+      <div class="scores">
+        <div class="score-card">
+          <div class="score-ring">
+            ${ringSVG(cleanPct, gradeClass(clean))}
+            <div class="score-value ${gradeClass(clean)}">${gradeLetter(clean)}</div>
+          </div>
+          <div class="score-label">Clean Score</div>
+        </div>
+        <div class="score-card">
+          <div class="score-ring">
+            ${ringSVG(actPct, actClass)}
+            <div class="score-value ${actClass}">${activeCount}</div>
+          </div>
+          <div class="score-label">Actives Found</div>
+        </div>
+        <div class="score-card">
+          <div class="score-ring">
+            ${ringSVG(ecoPct, gradeClass(eco))}
+            <div class="score-value ${gradeClass(eco)}">${gradeLetter(eco)}</div>
+          </div>
+          <div class="score-label">Eco-Score</div>
+        </div>
+      </div>
+
+      <div class="ai-summary">
+        <div class="section-title">The verdict</div>
+        <div class="ai-text">${summary}</div>
+      </div>
+
+      ${badges.length ? `
+      <div class="section">
+        <div class="section-title">Product claims</div>
+        <div class="allergens-row">
+          ${badges.map(b => `<span class="badge-pill ${b.tone}">${esc(b.text)}</span>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${detailRows.length ? `
+      <div class="section">
+        <div class="section-title">Product details</div>
+        <div class="nutri-grid">
+          ${detailRows.map(([k, v]) => `
+            <div class="nutri-cell">
+              <div class="nutri-key">${esc(k)}</div>
+              <div class="detail-val">${esc(v)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>` : ''}
+
+      ${analysis.concerning.length ? `
+      <div class="section">
+        <div class="section-title">Ingredients to watch (${analysis.concerning.length})</div>
+        <ul class="insight-list">
+          ${analysis.concerning.map(c => `
+            <li class="insight-item">
+              <span class="insight-dot ${c.severity >= 3 ? 'bad' : c.severity === 2 ? 'warn' : ''}"></span>
+              <span><strong>${esc(c.name)}</strong> — ${esc(c.desc)}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>` : ''}
+
+      ${analysis.beneficial.length ? `
+      <div class="section">
+        <div class="section-title">Beneficial actives (${analysis.beneficial.length})</div>
+        <ul class="insight-list">
+          ${analysis.beneficial.map(b => `
+            <li class="insight-item">
+              <span class="insight-dot good"></span>
+              <span><strong>${esc(b.name)}</strong> — ${esc(b.desc)}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>` : ''}
+
+      ${!analysis.concerning.length && !analysis.beneficial.length && ingredients ? `
+      <div class="section">
+        <div class="section-title">Ingredient analysis</div>
+        <div style="font-family:'Fraunces',serif;font-size:14px;color:#3a362d;font-style:italic">No notable concerning or beneficial ingredients detected in our database. Review the full INCI list below.</div>
+      </div>` : ''}
+
+      ${!ingredients ? `
+      <div class="section">
+        <div class="section-title">Ingredient analysis</div>
+        <div style="font-family:'Fraunces',serif;font-size:14px;color:#3a362d;font-style:italic">Ingredient list not available for this product. You can contribute it at openbeautyfacts.org.</div>
+      </div>` : ''}
+
+      ${ingredients ? `
+      <div class="section">
+        <div class="section-title">Full INCI list</div>
+        <div class="ingredient-text">${esc(ingredients)}</div>
+      </div>` : ''}
+    </div>
+  `;
+  output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function formatPAO(pao) {
+  if (!pao) return '';
+  // API returns "12 M", "6 M", or sometimes as a tag like "en:12-months"
+  const s = String(pao).replace(/^en:/, '').replace(/-/g, ' ');
+  const m = s.match(/(\d+)\s*[mM]/);
+  if (m) return m[1] + ' months';
+  return s;
+}
+
+function buildBeautyBadges(analysisTags, labelTags) {
+  const badges = [];
+  const all = [...analysisTags, ...labelTags].map(t => String(t).toLowerCase());
+  const has = (rx) => all.some(t => rx.test(t));
+
+  if (has(/:vegan$|:vegan-status-vegan/)) badges.push({ tone: 'good', text: 'Vegan' });
+  if (has(/cruelty-free/)) badges.push({ tone: 'good', text: 'Cruelty-free' });
+  if (has(/palm-oil-free|:palm-oil-free$/)) badges.push({ tone: 'good', text: 'Palm-oil-free' });
+  if (has(/:organic/)) badges.push({ tone: 'good', text: 'Organic' });
+  if (has(/:natural/)) badges.push({ tone: 'good', text: 'Natural' });
+  if (has(/sulfate-free|sulphate-free/)) badges.push({ tone: 'good', text: 'Sulfate-free' });
+  if (has(/paraben-free/)) badges.push({ tone: 'good', text: 'Paraben-free' });
+  if (has(/fragrance-free|unscented/)) badges.push({ tone: 'good', text: 'Fragrance-free' });
+  if (has(/hypoallergenic/)) badges.push({ tone: 'good', text: 'Hypoallergenic' });
+  if (has(/dermatologist/)) badges.push({ tone: 'good', text: 'Dermatologist-tested' });
+  if (has(/contains-palm-oil|:palm-oil$/)) badges.push({ tone: 'warn', text: 'Contains palm oil' });
+  if (has(/non-vegan/)) badges.push({ tone: 'warn', text: 'Not vegan' });
+  return badges;
+}
+
+function buildBeautySummary(clean, analysis, name) {
+  const safeName = esc(name.split(',')[0]);
+  if (!clean) {
+    return `${safeName} — ingredient details aren&rsquo;t complete enough for a full safety reading. Check the INCI list below for anything you personally avoid.`;
+  }
+  const conc = analysis.concerning.length;
+  const ben = analysis.beneficial.length;
+  if (clean === 'a') {
+    return `<em>Clean formulation.</em> No flagged ingredients found${ben > 0 ? ` and ${ben} recognized active${ben > 1 ? 's' : ''} on board` : ''}. ${safeName} looks like a thoughtful pick.`;
+  }
+  if (clean === 'b') {
+    return `<em>Mostly clean.</em> A couple of preference-based ingredients show up${ben > 0 ? `, balanced by ${ben} beneficial active${ben > 1 ? 's' : ''}` : ''}. Solid choice for most users.`;
+  }
+  if (clean === 'c') {
+    return `<em>Mixed bag.</em> ${conc} ingredient${conc > 1 ? 's' : ''} worth knowing about${ben > 0 ? `, but ${ben} beneficial active${ben > 1 ? 's' : ''} too` : ''}. Worth reading the full breakdown.`;
+  }
+  if (clean === 'd') {
+    return `<em>Check carefully.</em> ${conc} concerning ingredient${conc > 1 ? 's' : ''} detected. If you have sensitive skin or personal sensitivities, review below.`;
+  }
+  return `<em>Heavy concerns.</em> ${conc} flagged ingredient${conc > 1 ? 's' : ''} including higher-risk ones. Skip if you avoid these categories.`;
+}
+
+// ---------- Render: General ----------
+function renderGeneralProduct(code, p) {
+  const name = p.product_name || 'Unnamed product';
+  const brand = p.brands || '';
+  const img = p.image_front_small_url || p.image_small_url || '';
+
+  const insights = [];
+  if (p.categories) insights.push({ tone: '', text: `<strong>Category:</strong> ${esc(p.categories)}` });
+  if (p.countries) insights.push({ tone: '', text: `<strong>Available in:</strong> ${esc(p.countries)}` });
+  if (p.packaging) insights.push({ tone: 'warn', text: `<strong>Packaging:</strong> ${esc(p.packaging)} — check local recycling options.` });
+  if (p.labels) insights.push({ tone: 'good', text: `<strong>Labels:</strong> ${esc(p.labels)}` });
+  if (insights.length === 0) insights.push({ tone: '', text: 'Limited public data on this product.' });
+
+  output.innerHTML = `
+    <div class="result ${img ? 'has-image' : ''}">
+      <div class="result-head">
+        ${img ? `<img class="product-img" src="${esc(img)}" alt="" onerror="this.style.display='none'">` : ''}
+        <div class="barcode-num">▮▯▮▯ ${esc(code)}</div>
+        <div class="product-name">${esc(name)}</div>
+        ${brand ? `<div class="product-brand">${esc(brand)}</div>` : ''}
+        <div class="category-tag">General Product</div>
+      </div>
+
+      <div class="ai-summary">
+        <div class="section-title">The verdict</div>
+        <div class="ai-text"><em>Found in the catalog.</em> Here&rsquo;s what&rsquo;s publicly known about this item.</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Product details</div>
+        <ul class="insight-list">
+          ${insights.map(i => `<li class="insight-item"><span class="insight-dot ${i.tone}"></span><span>${i.text}</span></li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+  output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showLoading(text) {
+  output.innerHTML = `
+    <div class="result" style="background:#171510;color:#f5f1e8">
+      <div class="loading">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <div class="loading-text">${esc(text)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function showError(msg) {
+  output.innerHTML = `<div class="error">${msg}</div>`;
+  output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+window.addEventListener('beforeunload', stopScanner);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && codeReader) stopScanner();
+});
+</script>
+</body>
+</html>
