@@ -155,6 +155,36 @@
   .scores{display:flex;gap:10px;padding:22px;border-bottom:1px solid var(--line)}
   .score-card{flex:1;text-align:center;min-width:0}
   .score-ring{position:relative;width:84px;height:84px;margin:0 auto 10px}
+
+  .explain-toggle{
+    width:100%;background:rgba(23,21,16,.025);border:none;
+    border-bottom:1px solid var(--line);
+    padding:13px 22px;display:flex;justify-content:space-between;align-items:center;
+    cursor:pointer;color:var(--muted);
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;
+    transition:background .2s, color .2s;
+  }
+  .explain-toggle:hover,.explain-toggle.open{background:rgba(23,21,16,.05);color:var(--ink)}
+  .explain-toggle .caret{transition:transform .3s;font-size:12px;display:inline-block}
+  .explain-toggle.open .caret{transform:rotate(180deg)}
+  .explain-panel{
+    overflow:hidden;max-height:0;
+    background:rgba(23,21,16,.02);
+    transition:max-height .35s ease, padding .35s ease;
+    padding:0 22px;
+  }
+  .explain-panel.open{max-height:800px;padding:6px 22px 18px;border-bottom:1px solid var(--line)}
+  .explain-item{padding:12px 0;border-bottom:1px dashed rgba(23,21,16,.1)}
+  .explain-item:last-child{border-bottom:none}
+  .explain-label{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;
+    text-transform:uppercase;color:var(--ink);font-weight:700;margin-bottom:5px;
+  }
+  .explain-text{font-family:'Fraunces',serif;font-size:13px;line-height:1.5;color:#3a362d}
+  .explain-text em{font-style:italic;color:var(--accent)}
+
+  .external-link{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(255,74,28,.3);padding-bottom:1px}
+  .external-link:hover{border-bottom-color:var(--accent)}
   .score-ring svg{transform:rotate(-90deg)}
   .score-value{
     position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -479,34 +509,93 @@ async function fetchWithTimeout(url, ms) {
   }
 }
 
+// Open Food Facts stores barcodes canonically as EAN-13. A 12-digit UPC-A
+// scanned in the US needs a leading 0 to match. Likewise a 13-digit code
+// starting with 0 might be stored as the 12-digit UPC-A form.
+function barcodeVariants(code) {
+  const clean = String(code).replace(/\D/g, '');
+  const variants = [clean];
+  if (clean.length === 12) variants.push('0' + clean);
+  if (clean.length === 13 && clean[0] === '0') variants.push(clean.slice(1));
+  return [...new Set(variants)];
+}
+
 async function lookupProduct(code) {
   showLoading('Decoding ' + code);
-  const endpoints = [
-    { url: `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`, render: renderFoodProduct, category: 'food' },
-    { url: `https://world.openbeautyfacts.org/api/v2/product/${encodeURIComponent(code)}.json`, render: renderBeautyProduct, category: 'beauty' },
-    { url: `https://world.openproductsfacts.org/api/v2/product/${encodeURIComponent(code)}.json`, render: renderGeneralProduct, category: 'general' },
-  ];
-
+  const variants = barcodeVariants(code);
   let lastError = null;
-  for (const ep of endpoints) {
-    try {
-      const r = await fetchWithTimeout(ep.url, 8000);
-      if (!r.ok) { lastError = 'HTTP ' + r.status; continue; }
-      const data = await r.json();
-      if (data && data.status === 1 && data.product) {
-        return ep.render(code, data.product);
+  let networkFailure = false;
+
+  for (const variant of variants) {
+    const endpoints = [
+      { url: `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(variant)}.json`, render: renderFoodProduct, category: 'food' },
+      { url: `https://world.openbeautyfacts.org/api/v2/product/${encodeURIComponent(variant)}.json`, render: renderBeautyProduct, category: 'beauty' },
+      { url: `https://world.openproductsfacts.org/api/v2/product/${encodeURIComponent(variant)}.json`, render: renderGeneralProduct, category: 'general' },
+    ];
+
+    for (const ep of endpoints) {
+      try {
+        const r = await fetchWithTimeout(ep.url, 8000);
+        if (!r.ok) { lastError = 'HTTP ' + r.status; continue; }
+        const data = await r.json();
+        if (data && data.status === 1 && data.product) {
+          return ep.render(variant, data.product);
+        }
+      } catch (e) {
+        if (e && e.name === 'AbortError') { lastError = 'Request timed out'; networkFailure = true; }
+        else { lastError = (e && e.message) || 'Network error'; networkFailure = true; }
+        console.warn('Lookup error for', ep.category, e);
       }
-    } catch (e) {
-      lastError = (e && e.name === 'AbortError') ? 'Request timed out' : ((e && e.message) || 'Network error');
-      console.warn('Lookup error for', ep.category, e);
     }
   }
 
-  if (lastError) {
-    showError(`Couldn't reach product database. <strong>${esc(lastError)}</strong>.<br><br>If you opened this from a local file, browsers may block API calls. Try hosting it (e.g. <code>python3 -m http.server</code>) or open via HTTPS.`);
-  } else {
-    showError(`No product found for barcode <strong>${esc(code)}</strong>. Open Food Facts didn't have a match. Try a different code — or contribute this one at openfoodfacts.org.`);
+  // Distinguish "couldn't reach the server" from "server replied but had no match"
+  if (networkFailure) {
+    showError(`<strong>Couldn&rsquo;t reach the database.</strong><br><br>${esc(lastError)}.<br><br>Check your connection and try again. If you opened this from a local file, the browser may block API calls — host on HTTPS instead.`);
+    return;
   }
+
+  showNotFound(code);
+}
+
+function showNotFound(code) {
+  const cleanCode = String(code).replace(/\D/g, '');
+  const contributeFood = `https://world.openfoodfacts.org/cgi/product.pl?type=add&code=${encodeURIComponent(cleanCode)}`;
+  const contributeBeauty = `https://world.openbeautyfacts.org/cgi/product.pl?type=add&code=${encodeURIComponent(cleanCode)}`;
+  output.innerHTML = `
+    <div class="result">
+      <div class="result-head">
+        <div class="barcode-num">▮▯▮▯ ${esc(cleanCode)}</div>
+        <div class="product-name">Not in the database yet</div>
+        <div class="product-brand">Community contribution welcome</div>
+        <div class="category-tag">Unknown Product</div>
+      </div>
+      <div class="ai-summary">
+        <div class="section-title">What this means</div>
+        <div class="ai-text">
+          <em>Open Food Facts is community-maintained.</em> It has over 4 million products, but coverage varies — US household goods and newer products especially often need volunteer contributions. The barcode itself is fine; it just hasn&rsquo;t been added yet.
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Help build the database</div>
+        <ul class="insight-list">
+          <li class="insight-item">
+            <span class="insight-dot good"></span>
+            <span><strong>Food or drink?</strong> <a href="${contributeFood}" target="_blank" rel="noopener" class="external-link">Add it to Open Food Facts →</a></span>
+          </li>
+          <li class="insight-item">
+            <span class="insight-dot good"></span>
+            <span><strong>Cosmetic or personal care?</strong> <a href="${contributeBeauty}" target="_blank" rel="noopener" class="external-link">Add it to Open Beauty Facts →</a></span>
+          </li>
+          <li class="insight-item">
+            <span class="insight-dot"></span>
+            <span>Adding a product takes a couple of minutes — just snap photos of the label and nutrition table. Your contribution helps everyone.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  `;
+  output.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ---------- Cosmetic ingredient knowledge base ----------
@@ -632,6 +721,44 @@ function ringSVG(percent, colorClass) {
   </svg>`;
 }
 
+const SCORE_EXPLANATIONS = {
+  food: [
+    ['Nutri-Score', 'A nutritional grade from A (best) to E (worst), calculated per 100g. Sugar, salt, saturated fat, and calories count against; protein, fiber, and fruit/veg content count toward. A quick read on overall nutritional quality.'],
+    ['NOVA Group', 'A processing classification from 1 to 4. NOVA 1 is unprocessed (raw fruit, eggs, milk). NOVA 2 is simple kitchen ingredients (oil, butter, salt). NOVA 3 is processed (canned vegetables, cheese, bread). NOVA 4 is ultra-processed — industrially formulated with additives, emulsifiers, and flavorings rarely found in home kitchens.'],
+    ['Eco-Score', 'Environmental impact from A (lowest) to E (highest), measuring the full lifecycle: ingredients origin, transportation, packaging recyclability, and biodiversity impact. Often unavailable for products without enough data.'],
+  ],
+  beauty: [
+    ['Clean Score', 'A safety grade from A (no flagged ingredients) to E (multiple high-concern ones). Penalizes parabens, sulfates, phthalates, formaldehyde releasers, oxybenzone, and similar ingredients many consumers prefer to avoid. Higher-severity ingredients drop the grade more.'],
+    ['Actives Found', 'A count of well-researched beneficial ingredients detected in the formula — hyaluronic acid, niacinamide, ceramides, peptides, vitamin C, and others. More isn&rsquo;t always better, but a higher count suggests a targeted, formulated product.'],
+    ['Eco-Score', 'Environmental impact from A (best) to E (worst). Less commonly available for cosmetics — often shows as "—" when not yet calculated.'],
+  ],
+};
+
+function scoreExplainer(type) {
+  const items = SCORE_EXPLANATIONS[type] || [];
+  if (!items.length) return '';
+  return `
+    <button class="explain-toggle" type="button" onclick="toggleExplain(this)">
+      <span>ⓘ&nbsp; What do these scores mean?</span>
+      <span class="caret">▾</span>
+    </button>
+    <div class="explain-panel">
+      ${items.map(([label, text]) => `
+        <div class="explain-item">
+          <div class="explain-label">${esc(label)}</div>
+          <div class="explain-text">${text}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+window.toggleExplain = function (btn) {
+  btn.classList.toggle('open');
+  const panel = btn.nextElementSibling;
+  if (panel) panel.classList.toggle('open');
+};
+
 // ---------- Render: Food ----------
 function renderFoodProduct(code, p) {
   const name = p.product_name || p.product_name_en || p.generic_name || 'Unnamed product';
@@ -688,6 +815,8 @@ function renderFoodProduct(code, p) {
           <div class="score-label">Eco-Score</div>
         </div>
       </div>
+
+      ${scoreExplainer('food')}
 
       <div class="ai-summary">
         <div class="section-title">The verdict</div>
@@ -891,6 +1020,8 @@ function renderBeautyProduct(code, p) {
           <div class="score-label">Eco-Score</div>
         </div>
       </div>
+
+      ${scoreExplainer('beauty')}
 
       <div class="ai-summary">
         <div class="section-title">The verdict</div>
