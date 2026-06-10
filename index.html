@@ -222,6 +222,156 @@
   .nutri-val{font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin-top:4px;letter-spacing:-0.02em}
   .nutri-val small{font-size:12px;font-weight:400;color:var(--muted);font-style:italic}
 
+  /* Mode tabs */
+  .mode-tabs{
+    display:flex;background:rgba(245,241,232,.04);
+    border:1px solid rgba(245,241,232,.1);
+    border-bottom:0;border-radius:4px 4px 0 0;overflow:hidden;
+  }
+  .mode-tabs button{
+    flex:1;background:transparent;border:none;padding:14px 12px;cursor:pointer;
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;
+    text-transform:uppercase;color:rgba(245,241,232,.55);
+    transition:background .2s, color .2s;border-right:1px solid rgba(245,241,232,.08);
+  }
+  .mode-tabs button:last-child{border-right:none}
+  .mode-tabs button.active{background:var(--paper);color:var(--ink)}
+  .mode-tabs button:not(.active):hover{color:var(--paper);background:rgba(245,241,232,.06)}
+  .scanner-wrap.tabbed,.photo-wrap.tabbed{border-radius:0 0 4px 4px}
+
+  /* Photo capture */
+  .photo-wrap{
+    background:var(--paper);color:var(--ink);border-radius:4px;overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(245,241,232,.05);
+  }
+  .photo-area{
+    position:relative;aspect-ratio:4/3;background:#1a1812;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #photoPreview{width:100%;height:100%;object-fit:cover;display:block}
+  .photo-empty{
+    text-align:center;color:var(--paper);padding:30px 20px;
+  }
+  .photo-empty .photo-icon{
+    font-family:'Fraunces',serif;font-style:italic;font-weight:300;
+    font-size:48px;margin-bottom:16px;
+  }
+  .photo-empty p{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;
+    text-transform:uppercase;color:rgba(245,241,232,.6);line-height:1.5;
+  }
+  .photo-empty p.sub{font-size:9px;color:rgba(245,241,232,.4);letter-spacing:0.1em;margin-top:8px;text-transform:none;font-style:italic}
+  .photo-loading{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(13,12,10,.85);color:var(--paper);
+  }
+  .photo-loading p{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;
+    text-transform:uppercase;color:rgba(245,241,232,.7);margin-top:14px;
+  }
+  .photo-actions{padding:18px 20px;display:flex;gap:10px;border-top:1px solid var(--line);background:var(--paper)}
+
+  /* Predictions list */
+  .predictions-card{
+    margin-top:28px;background:var(--paper);color:var(--ink);border-radius:4px;
+    overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);
+    animation:slideUp .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .predictions-head{padding:22px 22px 14px;border-bottom:1px solid var(--line)}
+  .predictions-photo{
+    width:60px;height:60px;border-radius:2px;background:rgba(23,21,16,.05);
+    float:right;margin-left:14px;object-fit:cover;border:1px solid var(--line);
+  }
+  .predictions-title{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;
+    text-transform:uppercase;color:var(--muted);
+  }
+  .predictions-q{
+    font-family:'Fraunces',serif;font-weight:600;font-size:22px;
+    letter-spacing:-0.02em;margin-top:6px;line-height:1.2;
+  }
+  .predictions-list{padding:12px 0}
+  .prediction-card{
+    width:100%;display:flex;align-items:center;gap:14px;
+    padding:14px 22px;background:transparent;border:none;border-top:1px solid var(--line);
+    cursor:pointer;text-align:left;transition:background .15s;
+  }
+  .prediction-card:first-child{border-top:none}
+  .prediction-card:hover,.prediction-card:active{background:rgba(255,74,28,.06)}
+  .prediction-card.primary{background:rgba(0,182,122,.05)}
+  .prediction-card.primary:hover{background:rgba(255,74,28,.08)}
+  .prediction-emoji{font-size:30px;line-height:1;flex-shrink:0}
+  .prediction-info{flex:1;min-width:0}
+  .prediction-name{
+    font-family:'Fraunces',serif;font-size:18px;font-weight:600;letter-spacing:-0.01em;
+  }
+  .prediction-confidence{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;
+    color:var(--muted);text-transform:uppercase;margin-top:2px;
+  }
+  .prediction-arrow{
+    font-family:'Fraunces',serif;font-size:22px;font-weight:300;color:var(--accent);
+    flex-shrink:0;
+  }
+  .predictions-footer{
+    padding:14px 22px;border-top:1px solid var(--line);
+    font-family:'Fraunces',serif;font-style:italic;font-size:13px;
+    color:var(--muted);line-height:1.5;
+  }
+
+  /* Photo-identified label on result */
+  .estimate-tag{
+    display:inline-block;margin-top:8px;padding:3px 8px;background:rgba(245,184,0,.15);color:#8a6700;
+    font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;
+    text-transform:uppercase;border-radius:2px;border:1px solid rgba(245,184,0,.3);
+  }
+  .serving-toggle{
+    display:inline-flex;border:1px solid var(--line);border-radius:4px;
+    overflow:hidden;margin-bottom:18px;
+  }
+  .serving-toggle button{
+    background:transparent;border:none;padding:8px 14px;cursor:pointer;
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--muted);transition:background .2s, color .2s;
+  }
+  .serving-toggle button.active{background:var(--ink);color:var(--paper)}
+  .serving-toggle button:not(.active):hover{background:rgba(23,21,16,.05);color:var(--ink)}
+
+  /* Macro donut */
+  .macro-block{display:flex;gap:22px;align-items:center;margin-bottom:24px}
+  .macro-chart{position:relative;width:100px;height:100px;flex-shrink:0}
+  .macro-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .macro-kcal{font-family:'Fraunces',serif;font-size:24px;font-weight:600;letter-spacing:-0.02em;line-height:1}
+  .macro-kcal-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+  .macro-legend{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}
+  .macro-row{font-family:'Fraunces',serif;font-size:14px;display:flex;align-items:center;gap:9px;color:var(--ink)}
+  .macro-row .swatch{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .macro-row .swatch-label{flex:1}
+  .macro-row .swatch-pct{font-weight:600;font-feature-settings:"tnum"}
+  .macro-row .swatch-grams{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-left:8px}
+
+  /* Daily Value bars */
+  .dv-list{display:flex;flex-direction:column;gap:13px}
+  .dv-row{display:grid;grid-template-columns:1fr auto;column-gap:12px;row-gap:5px;align-items:baseline}
+  .dv-label{font-family:'Fraunces',serif;font-size:14px;color:var(--ink)}
+  .dv-value{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);justify-self:end;letter-spacing:0.03em}
+  .dv-bar-row{grid-column:1/-1;display:flex;align-items:center;gap:10px}
+  .dv-track{flex:1;height:6px;background:rgba(23,21,16,.07);border-radius:3px;overflow:hidden}
+  .dv-fill{height:100%;border-radius:3px;transition:width 1s ease-out}
+  .dv-percent{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.03em;min-width:54px;text-align:right;font-feature-settings:"tnum"}
+  .dv-footnote{
+    font-family:'Fraunces',serif;font-style:italic;font-size:12px;color:var(--muted);
+    margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);line-height:1.5;
+  }
+
+  /* Vitamins & minerals */
+  .micro-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+  .micro-cell{background:var(--paper);padding:12px 14px}
+  .micro-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .micro-row-vals{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .micro-value{font-family:'Fraunces',serif;font-size:15px;font-weight:600;letter-spacing:-0.01em}
+  .micro-dv{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.03em;font-feature-settings:"tnum"}
+
   .ai-summary{background:var(--ink);color:var(--paper);padding:24px 22px;position:relative}
   .ai-summary .section-title{color:rgba(245,241,232,.5)}
   .ai-summary .section-title::before{background:var(--accent)}
@@ -285,7 +435,12 @@
     <strong id="cameraNoticeTitle">Heads up:</strong> <span id="cameraNoticeBody"></span>
   </div>
 
-  <div class="scanner-wrap">
+  <div class="mode-tabs">
+    <button class="active" data-mode="barcode" id="tabBarcode">▮▯▮▯ Scan barcode</button>
+    <button data-mode="photo" id="tabPhoto">📷 Identify food</button>
+  </div>
+
+  <div class="scanner-wrap tabbed" id="modeBarcode">
     <div class="scanner" id="scanner">
       <video id="video" playsinline muted style="display:none"></video>
       <div class="scanner-placeholder" id="placeholder">
@@ -303,6 +458,26 @@
     <div class="scanner-actions">
       <button class="btn btn-primary" id="startBtn">▶ Start camera</button>
       <button class="btn btn-secondary" id="stopBtn" disabled>■ Stop</button>
+    </div>
+  </div>
+
+  <div class="photo-wrap tabbed" id="modePhoto" style="display:none">
+    <div class="photo-area" id="photoArea">
+      <div class="photo-empty" id="photoEmpty">
+        <div class="photo-icon">＋</div>
+        <p>Tap below to take or upload a photo</p>
+        <p class="sub">Best for fresh fruits, vegetables &amp; common dishes</p>
+      </div>
+      <img id="photoPreview" alt="" style="display:none">
+      <div class="photo-loading" id="photoLoading" style="display:none">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <p id="photoLoadingText">Loading vision model...</p>
+      </div>
+    </div>
+    <div class="photo-actions">
+      <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+      <button class="btn btn-primary" id="photoBtn">📷 Take or upload photo</button>
+      <button class="btn btn-secondary" id="photoClearBtn" disabled>Clear</button>
     </div>
   </div>
 
@@ -759,8 +934,420 @@ window.toggleExplain = function (btn) {
   if (panel) panel.classList.toggle('open');
 };
 
+// ---------- Photo food recognition database ----------
+// Nutrition data per 100g, USDA FoodData Central reference values.
+// Salt = sodium × 2.5. Micronutrients in grams (consistent with OFF format).
+const FOOD_DB = {
+  apple:           { name: 'Apple', emoji: '🍎', nutriscore: 'a', nova: 1, servingG: 182, servingLabel: '1 medium apple (182 g)', ingredients: 'Whole fresh apple', energy_kcal: 52, fat: 0.2, sat_fat: 0.03, carbs: 14, sugars: 10.4, fiber: 2.4, protein: 0.3, salt: 0.0025, vitamin_c: 0.0046, potassium: 0.107 },
+  banana:          { name: 'Banana', emoji: '🍌', nutriscore: 'a', nova: 1, servingG: 118, servingLabel: '1 medium banana (118 g)', ingredients: 'Whole fresh banana', energy_kcal: 89, fat: 0.3, sat_fat: 0.11, carbs: 23, sugars: 12, fiber: 2.6, protein: 1.1, salt: 0.0025, vitamin_c: 0.0087, potassium: 0.358 },
+  orange:          { name: 'Orange', emoji: '🍊', nutriscore: 'a', nova: 1, servingG: 140, servingLabel: '1 medium orange (140 g)', ingredients: 'Whole fresh orange', energy_kcal: 47, fat: 0.1, sat_fat: 0.02, carbs: 12, sugars: 9, fiber: 2.4, protein: 0.9, salt: 0, vitamin_c: 0.053, potassium: 0.181, calcium: 0.040 },
+  lemon:           { name: 'Lemon', emoji: '🍋', nutriscore: 'a', nova: 1, servingG: 84, servingLabel: '1 medium lemon (84 g)', ingredients: 'Whole fresh lemon', energy_kcal: 29, fat: 0.3, sat_fat: 0.04, carbs: 9, sugars: 2.5, fiber: 2.8, protein: 1.1, salt: 0, vitamin_c: 0.053, potassium: 0.138 },
+  pineapple:       { name: 'Pineapple', emoji: '🍍', nutriscore: 'a', nova: 1, servingG: 165, servingLabel: '1 cup chunks (165 g)', ingredients: 'Whole fresh pineapple', energy_kcal: 50, fat: 0.1, sat_fat: 0.009, carbs: 13, sugars: 9.9, fiber: 1.4, protein: 0.5, salt: 0, vitamin_c: 0.0479, potassium: 0.109 },
+  strawberry:      { name: 'Strawberry', emoji: '🍓', nutriscore: 'a', nova: 1, servingG: 152, servingLabel: '1 cup sliced (152 g)', ingredients: 'Whole fresh strawberries', energy_kcal: 32, fat: 0.3, sat_fat: 0.015, carbs: 7.7, sugars: 4.9, fiber: 2, protein: 0.7, salt: 0, vitamin_c: 0.0588, potassium: 0.153 },
+  fig:             { name: 'Fig', emoji: '🌳', nutriscore: 'a', nova: 1, servingG: 50, servingLabel: '1 large fig (64 g)', ingredients: 'Whole fresh fig', energy_kcal: 74, fat: 0.3, sat_fat: 0.06, carbs: 19, sugars: 16, fiber: 2.9, protein: 0.8, salt: 0, potassium: 0.232 },
+  pomegranate:     { name: 'Pomegranate', emoji: '🥬', nutriscore: 'a', nova: 1, servingG: 174, servingLabel: '1 cup seeds (174 g)', ingredients: 'Whole fresh pomegranate seeds', energy_kcal: 83, fat: 1.2, sat_fat: 0.12, carbs: 19, sugars: 14, fiber: 4, protein: 1.7, salt: 0, vitamin_c: 0.0102, potassium: 0.236 },
+  jackfruit:       { name: 'Jackfruit', emoji: '🌳', nutriscore: 'a', nova: 1, servingG: 165, servingLabel: '1 cup sliced (165 g)', ingredients: 'Whole fresh jackfruit', energy_kcal: 95, fat: 0.6, sat_fat: 0.2, carbs: 23, sugars: 19, fiber: 1.5, protein: 1.7, salt: 0, vitamin_c: 0.0136, potassium: 0.448 },
+  custard_apple:   { name: 'Custard apple', emoji: '🌳', nutriscore: 'a', nova: 1, servingG: 160, servingLabel: '1 cup pulp (160 g)', ingredients: 'Whole fresh custard apple', energy_kcal: 101, fat: 0.6, sat_fat: 0.23, carbs: 25, sugars: 19, fiber: 2.4, protein: 1.7, salt: 0.001, vitamin_c: 0.0192, potassium: 0.382 },
+  broccoli:        { name: 'Broccoli', emoji: '🥦', nutriscore: 'a', nova: 1, servingG: 91, servingLabel: '1 cup chopped (91 g)', ingredients: 'Whole fresh broccoli', energy_kcal: 34, fat: 0.4, sat_fat: 0.04, carbs: 7, sugars: 1.7, fiber: 2.6, protein: 2.8, salt: 0.083, vitamin_c: 0.0892, potassium: 0.316, calcium: 0.047 },
+  cauliflower:     { name: 'Cauliflower', emoji: '🥬', nutriscore: 'a', nova: 1, servingG: 107, servingLabel: '1 cup chopped (107 g)', ingredients: 'Whole fresh cauliflower', energy_kcal: 25, fat: 0.3, sat_fat: 0.13, carbs: 5, sugars: 1.9, fiber: 2, protein: 1.9, salt: 0.075, vitamin_c: 0.0482, potassium: 0.299 },
+  cucumber:        { name: 'Cucumber', emoji: '🥒', nutriscore: 'a', nova: 1, servingG: 104, servingLabel: '1 cup sliced (104 g)', ingredients: 'Whole fresh cucumber', energy_kcal: 15, fat: 0.1, sat_fat: 0.03, carbs: 3.6, sugars: 1.7, fiber: 0.5, protein: 0.7, salt: 0.005, vitamin_c: 0.0028, potassium: 0.147 },
+  bell_pepper:     { name: 'Bell pepper', emoji: '🫑', nutriscore: 'a', nova: 1, servingG: 119, servingLabel: '1 medium pepper (119 g)', ingredients: 'Whole fresh red bell pepper', energy_kcal: 31, fat: 0.3, sat_fat: 0.03, carbs: 6, sugars: 4.2, fiber: 2.1, protein: 1, salt: 0.0095, vitamin_c: 0.128, potassium: 0.211, vitamin_a: 0.000157 },
+  mushroom:        { name: 'Mushroom', emoji: '🍄', nutriscore: 'a', nova: 1, servingG: 96, servingLabel: '1 cup sliced (96 g)', ingredients: 'Whole fresh white mushrooms', energy_kcal: 22, fat: 0.3, sat_fat: 0.05, carbs: 3.3, sugars: 2, fiber: 1, protein: 3.1, salt: 0.0125, potassium: 0.318 },
+  cabbage:         { name: 'Cabbage', emoji: '🥬', nutriscore: 'a', nova: 1, servingG: 89, servingLabel: '1 cup chopped (89 g)', ingredients: 'Whole fresh green cabbage', energy_kcal: 25, fat: 0.1, sat_fat: 0.03, carbs: 5.8, sugars: 3.2, fiber: 2.5, protein: 1.3, salt: 0.045, vitamin_c: 0.0367, potassium: 0.170 },
+  zucchini:        { name: 'Zucchini', emoji: '🥒', nutriscore: 'a', nova: 1, servingG: 124, servingLabel: '1 cup sliced (124 g)', ingredients: 'Whole fresh zucchini', energy_kcal: 17, fat: 0.3, sat_fat: 0.07, carbs: 3.1, sugars: 2.5, fiber: 1, protein: 1.2, salt: 0.02, vitamin_c: 0.0177, potassium: 0.261 },
+  artichoke:       { name: 'Artichoke', emoji: '🌿', nutriscore: 'a', nova: 1, servingG: 128, servingLabel: '1 medium artichoke (128 g)', ingredients: 'Whole fresh artichoke', energy_kcal: 47, fat: 0.2, sat_fat: 0.04, carbs: 11, sugars: 1, fiber: 5.4, protein: 3.3, salt: 0.235, vitamin_c: 0.0117, potassium: 0.370, magnesium: 0.060 },
+  acorn_squash:    { name: 'Acorn squash', emoji: '🎃', nutriscore: 'a', nova: 1, servingG: 205, servingLabel: '1 cup cubed (205 g)', ingredients: 'Fresh acorn squash', energy_kcal: 40, fat: 0.1, sat_fat: 0.02, carbs: 10, sugars: 0, fiber: 1.5, protein: 0.8, salt: 0.008, vitamin_c: 0.011, potassium: 0.347 },
+  butternut_squash:{ name: 'Butternut squash', emoji: '🎃', nutriscore: 'a', nova: 1, servingG: 205, servingLabel: '1 cup cubed (205 g)', ingredients: 'Fresh butternut squash', energy_kcal: 45, fat: 0.1, sat_fat: 0.02, carbs: 12, sugars: 2.2, fiber: 2, protein: 1, salt: 0.01, vitamin_c: 0.021, potassium: 0.352, vitamin_a: 0.000532 },
+  mashed_potato:   { name: 'Mashed potato', emoji: '🥔', nutriscore: 'b', nova: 3, servingG: 210, servingLabel: '1 cup (210 g)', ingredients: 'Potatoes, milk, butter, salt', energy_kcal: 113, fat: 4.2, sat_fat: 1.7, carbs: 17, sugars: 1.2, fiber: 1.5, protein: 2, salt: 0.85, vitamin_c: 0.0086, potassium: 0.328 },
+  pizza:           { name: 'Pizza', emoji: '🍕', nutriscore: 'd', nova: 4, servingG: 107, servingLabel: '1 slice (107 g)', ingredients: 'Dough, tomato sauce, cheese, toppings', energy_kcal: 266, fat: 10, sat_fat: 4.5, carbs: 33, sugars: 3.6, fiber: 2.3, protein: 11, salt: 1.5, calcium: 0.188, potassium: 0.184 },
+  cheeseburger:    { name: 'Cheeseburger', emoji: '🍔', nutriscore: 'd', nova: 4, servingG: 200, servingLabel: '1 burger (200 g)', ingredients: 'Bun, beef patty, cheese, condiments', energy_kcal: 295, fat: 14, sat_fat: 6.4, carbs: 27, sugars: 5.5, fiber: 1.5, protein: 17, salt: 1.4, calcium: 0.140, iron: 0.0026 },
+  hot_dog:         { name: 'Hot dog', emoji: '🌭', nutriscore: 'e', nova: 4, servingG: 98, servingLabel: '1 hot dog with bun (98 g)', ingredients: 'Bun, sausage (pork/beef), condiments', energy_kcal: 290, fat: 26, sat_fat: 9.5, carbs: 3, sugars: 1, fiber: 0.5, protein: 10, salt: 2.5, potassium: 0.143 },
+  burrito:         { name: 'Burrito', emoji: '🌯', nutriscore: 'c', nova: 4, servingG: 220, servingLabel: '1 burrito (220 g)', ingredients: 'Tortilla, beans, rice, fillings', energy_kcal: 215, fat: 7, sat_fat: 2.8, carbs: 27, sugars: 1.6, fiber: 3.4, protein: 9.3, salt: 1.3, iron: 0.0023, calcium: 0.063 },
+  pretzel:         { name: 'Pretzel', emoji: '🥨', nutriscore: 'd', nova: 4, servingG: 30, servingLabel: '1 small bag (30 g)', ingredients: 'Wheat flour, salt, yeast', energy_kcal: 384, fat: 2.9, sat_fat: 0.7, carbs: 80, sugars: 2.2, fiber: 3, protein: 10, salt: 4, iron: 0.0046 },
+  bagel:           { name: 'Bagel', emoji: '🥯', nutriscore: 'c', nova: 4, servingG: 99, servingLabel: '1 medium bagel (99 g)', ingredients: 'Wheat flour, water, yeast, malt', energy_kcal: 257, fat: 1.4, sat_fat: 0.2, carbs: 51, sugars: 5.4, fiber: 2.1, protein: 10, salt: 1.2, iron: 0.0029, calcium: 0.020 },
+  bread:           { name: 'Bread', emoji: '🥖', nutriscore: 'c', nova: 3, servingG: 56, servingLabel: '2 slices (56 g)', ingredients: 'Wheat flour, water, yeast, salt', energy_kcal: 271, fat: 1.4, sat_fat: 0.3, carbs: 53, sugars: 5.6, fiber: 2.3, protein: 9, salt: 1.4, iron: 0.0036 },
+  meatloaf:        { name: 'Meatloaf', emoji: '🍖', nutriscore: 'c', nova: 4, servingG: 142, servingLabel: '1 slice (142 g)', ingredients: 'Ground beef, breadcrumbs, eggs, seasoning', energy_kcal: 197, fat: 12, sat_fat: 4.5, carbs: 7, sugars: 1.5, fiber: 0.6, protein: 14, salt: 1.7, iron: 0.0019 },
+  carbonara:       { name: 'Carbonara', emoji: '🍝', nutriscore: 'd', nova: 4, servingG: 250, servingLabel: '1 plate (250 g)', ingredients: 'Pasta, eggs, pecorino, guanciale, pepper', energy_kcal: 380, fat: 19, sat_fat: 8, carbs: 38, sugars: 2, fiber: 2, protein: 13, salt: 1.5 },
+  chocolate_sauce: { name: 'Chocolate sauce', emoji: '🍫', nutriscore: 'e', nova: 4, servingG: 38, servingLabel: '2 tbsp (38 g)', ingredients: 'Cocoa, sugar, milk solids, fat', energy_kcal: 388, fat: 2, sat_fat: 1, carbs: 76, sugars: 65, fiber: 2, protein: 5, salt: 0.3 },
+  dough:           { name: 'Pastry dough', emoji: '🥐', nutriscore: 'c', nova: 4, servingG: 50, servingLabel: '1 piece (50 g)', ingredients: 'Flour, fat, water, sugar, salt', energy_kcal: 280, fat: 6, sat_fat: 1, carbs: 50, sugars: 4, fiber: 2, protein: 7, salt: 1 },
+  ice_cream:       { name: 'Ice cream', emoji: '🍨', nutriscore: 'd', nova: 4, servingG: 66, servingLabel: '1 scoop (66 g)', ingredients: 'Cream, sugar, milk, flavorings', energy_kcal: 207, fat: 11, sat_fat: 6.8, carbs: 24, sugars: 21, fiber: 0.7, protein: 3.5, salt: 0.2, calcium: 0.128 },
+  popsicle:        { name: 'Popsicle', emoji: '🍡', nutriscore: 'd', nova: 4, servingG: 60, servingLabel: '1 popsicle (60 g)', ingredients: 'Water, sugar, fruit flavoring, color', energy_kcal: 90, fat: 0, sat_fat: 0, carbs: 23, sugars: 22, fiber: 0, protein: 0, salt: 0 },
+  espresso:        { name: 'Espresso', emoji: '☕', nutriscore: 'a', nova: 1, servingG: 30, servingLabel: '1 shot (30 ml)', ingredients: 'Brewed coffee', energy_kcal: 9, fat: 0.2, sat_fat: 0.02, carbs: 1.7, sugars: 0, fiber: 0, protein: 0.1, salt: 0.0035, potassium: 0.115 },
+  eggnog:          { name: 'Eggnog', emoji: '🥚', nutriscore: 'd', nova: 4, servingG: 254, servingLabel: '1 cup (254 g)', ingredients: 'Milk, cream, sugar, eggs, spices', energy_kcal: 134, fat: 7.5, sat_fat: 4.5, carbs: 13.4, sugars: 13, fiber: 0, protein: 4, salt: 0.3, calcium: 0.139 },
+  potpie:          { name: 'Pot pie', emoji: '🥧', nutriscore: 'd', nova: 4, servingG: 232, servingLabel: '1 small pie (232 g)', ingredients: 'Pastry, meat or vegetables, gravy', energy_kcal: 237, fat: 14, sat_fat: 4.5, carbs: 21, sugars: 2, fiber: 1.5, protein: 7, salt: 1.4 },
+};
+
+// MobileNet ImageNet labels → keys in FOOD_DB (case-insensitive substring match)
+const CLASS_TO_FOOD = {
+  'granny smith': 'apple',
+  'banana': 'banana',
+  'orange': 'orange',
+  'lemon': 'lemon',
+  'pineapple': 'pineapple',
+  'strawberry': 'strawberry',
+  'fig': 'fig',
+  'pomegranate': 'pomegranate',
+  'jackfruit': 'jackfruit',
+  'custard apple': 'custard_apple',
+  'broccoli': 'broccoli',
+  'cauliflower': 'cauliflower',
+  'cucumber': 'cucumber',
+  'bell pepper': 'bell_pepper',
+  'mushroom': 'mushroom',
+  'head cabbage': 'cabbage',
+  'zucchini': 'zucchini',
+  'artichoke': 'artichoke',
+  'acorn squash': 'acorn_squash',
+  'butternut squash': 'butternut_squash',
+  'mashed potato': 'mashed_potato',
+  'pizza': 'pizza',
+  'cheeseburger': 'cheeseburger',
+  'hot dog': 'hot_dog',
+  'hotdog': 'hot_dog',
+  'burrito': 'burrito',
+  'pretzel': 'pretzel',
+  'bagel': 'bagel',
+  'french loaf': 'bread',
+  'meat loaf': 'meatloaf',
+  'meatloaf': 'meatloaf',
+  'carbonara': 'carbonara',
+  'chocolate sauce': 'chocolate_sauce',
+  'chocolate syrup': 'chocolate_sauce',
+  'dough': 'dough',
+  'ice cream': 'ice_cream',
+  'icecream': 'ice_cream',
+  'ice lolly': 'popsicle',
+  'popsicle': 'popsicle',
+  'espresso': 'espresso',
+  'eggnog': 'eggnog',
+  'potpie': 'potpie',
+};
+
+function classNameToFoodKey(className) {
+  const norm = String(className || '').toLowerCase();
+  for (const key of Object.keys(CLASS_TO_FOOD)) {
+    if (norm.includes(key)) return CLASS_TO_FOOD[key];
+  }
+  return null;
+}
+
+// Turn a FOOD_DB entry into the same product shape used by renderFoodProduct
+function foodToProduct(foodKey, photoUrl) {
+  const f = FOOD_DB[foodKey];
+  if (!f) return null;
+  const n = {
+    'energy-kcal_100g': f.energy_kcal,
+    fat_100g: f.fat,
+    'saturated-fat_100g': f.sat_fat,
+    carbohydrates_100g: f.carbs,
+    sugars_100g: f.sugars,
+    fiber_100g: f.fiber,
+    proteins_100g: f.protein,
+    salt_100g: f.salt,
+  };
+  // Optional micronutrients (OFF format: grams per 100g)
+  const micros = ['vitamin_a', 'vitamin_c', 'vitamin_d', 'vitamin_e', 'calcium', 'iron', 'magnesium', 'potassium', 'zinc'];
+  for (const m of micros) {
+    if (f[m] !== undefined) {
+      const key = m.replace('_', '-') + '_100g';
+      n[key] = f[m];
+    }
+  }
+  return {
+    product_name: f.name,
+    brands: 'USDA reference (estimated)',
+    image_front_small_url: photoUrl || '',
+    nutriscore_grade: f.nutriscore || '',
+    nova_group: f.nova || null,
+    ecoscore_grade: '',
+    nutriments: n,
+    serving_quantity: f.servingG,
+    serving_size: f.servingLabel,
+    ingredients_text: f.ingredients || '',
+    labels_tags: [],
+    allergens_tags: [],
+    _isPhotoIdentified: true,
+    _foodKey: foodKey,
+    _emoji: f.emoji,
+  };
+}
+
+// ---------- Nutritional insights ----------
+// FDA Daily Reference Values for an adult, 2000 cal diet
+const DV = {
+  energy: 2000,   // kcal
+  fat: 78,        // g
+  satFat: 20,     // g
+  carbs: 275,     // g
+  sugars: 50,     // g (added sugar reference)
+  fiber: 28,      // g
+  protein: 50,    // g
+  salt: 5.75,     // g  (= 2300 mg sodium × 2.5)
+};
+
+// Micronutrients we display when available. OFF stores these in grams per 100g,
+// so multiply by `mult` to get the display unit. DV is in display unit.
+const MICRONUTRIENTS = [
+  { key: 'vitamin-a',   label: 'Vitamin A',   dv: 900,  unit: 'µg', mult: 1e6, kind: 'good' },
+  { key: 'vitamin-c',   label: 'Vitamin C',   dv: 90,   unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'vitamin-d',   label: 'Vitamin D',   dv: 20,   unit: 'µg', mult: 1e6, kind: 'good' },
+  { key: 'vitamin-e',   label: 'Vitamin E',   dv: 15,   unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'vitamin-k',   label: 'Vitamin K',   dv: 120,  unit: 'µg', mult: 1e6, kind: 'good' },
+  { key: 'vitamin-b1',  label: 'Thiamin (B1)', dv: 1.2, unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'vitamin-b2',  label: 'Riboflavin',  dv: 1.3,  unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'vitamin-pp',  label: 'Niacin (B3)', dv: 16,   unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'vitamin-b6',  label: 'Vitamin B6',  dv: 1.7,  unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'vitamin-b9',  label: 'Folate',      dv: 400,  unit: 'µg', mult: 1e6, kind: 'good' },
+  { key: 'vitamin-b12', label: 'Vitamin B12', dv: 2.4,  unit: 'µg', mult: 1e6, kind: 'good' },
+  { key: 'calcium',     label: 'Calcium',     dv: 1300, unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'iron',        label: 'Iron',        dv: 18,   unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'magnesium',   label: 'Magnesium',   dv: 420,  unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'phosphorus',  label: 'Phosphorus',  dv: 1250, unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'potassium',   label: 'Potassium',   dv: 4700, unit: 'mg', mult: 1000, kind: 'good' },
+  { key: 'zinc',        label: 'Zinc',        dv: 11,   unit: 'mg', mult: 1000, kind: 'good' },
+];
+
+const MACRO_COLORS = { fat: '#f5b800', carbs: '#fb8c00', protein: '#00b67a' };
+
+// Try the API's pre-computed _serving values first; fall back to scaling _100g by serving size.
+function nutVal(n, baseKey, mode, scale) {
+  if (mode === 'serving') {
+    const direct = num(n[baseKey + '_serving']);
+    if (isFinite(direct)) return direct;
+    const per100 = num(n[baseKey + '_100g']);
+    if (isFinite(per100) && scale) return per100 * scale;
+    return NaN;
+  }
+  return num(n[baseKey + '_100g']);
+}
+
+function dvColor(pct, kind) {
+  if (kind === 'limit') {
+    if (pct >= 100) return '#e53935';
+    if (pct >= 50) return '#fb8c00';
+    if (pct >= 20) return '#f5b800';
+    return '#9b9587';
+  }
+  if (kind === 'good') {
+    if (pct >= 25) return '#00b67a';
+    if (pct >= 10) return '#8bc34a';
+    return '#9b9587';
+  }
+  // neutral
+  if (pct >= 100) return '#fb8c00';
+  return '#9b9587';
+}
+
+function formatGrams(g) {
+  if (!isFinite(g)) return '—';
+  if (g === 0) return '0 g';
+  if (g < 0.1) return (g * 1000).toFixed(0) + ' mg';
+  if (g < 1) return g.toFixed(2) + ' g';
+  if (g < 10) return g.toFixed(1) + ' g';
+  return Math.round(g) + ' g';
+}
+
+function formatUnit(v, unit) {
+  if (!isFinite(v)) return '—';
+  if (v === 0) return '0 ' + unit;
+  if (v < 1) return v.toFixed(2) + ' ' + unit;
+  if (v < 10) return v.toFixed(1) + ' ' + unit;
+  return Math.round(v) + ' ' + unit;
+}
+
+function calcMacros(n, mode, scale) {
+  const f = nutVal(n, 'fat', mode, scale);
+  const c = nutVal(n, 'carbohydrates', mode, scale);
+  const p = nutVal(n, 'proteins', mode, scale);
+  const fg = isFinite(f) ? f : 0;
+  const cg = isFinite(c) ? c : 0;
+  const pg = isFinite(p) ? p : 0;
+  const fCal = fg * 9, cCal = cg * 4, pCal = pg * 4;
+  const total = fCal + cCal + pCal;
+  if (total < 1) return null;
+  return { total, fCal, cCal, pCal, fg, cg, pg };
+}
+
+function donutSVG(macros) {
+  if (!macros) return '';
+  const parts = [
+    { value: macros.fCal, color: MACRO_COLORS.fat },
+    { value: macros.cCal, color: MACRO_COLORS.carbs },
+    { value: macros.pCal, color: MACRO_COLORS.protein },
+  ].filter(p => p.value > 0);
+  if (parts.length === 0) return '';
+  const r = 36, circ = 2 * Math.PI * r;
+  const total = parts.reduce((s, p) => s + p.value, 0);
+  let offset = 0;
+  const segs = parts.map(part => {
+    const length = (part.value / total) * circ;
+    // tiny gap when multiple segments
+    const gap = parts.length > 1 ? 1.5 : 0;
+    const drawLen = Math.max(length - gap, 0.5);
+    const seg = `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${part.color}" stroke-width="9"
+        stroke-dasharray="${drawLen} ${circ}" stroke-dashoffset="${-offset}"
+        transform="rotate(-90 50 50)" />`;
+    offset += length;
+    return seg;
+  }).join('');
+  return `<svg width="100" height="100" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(23,21,16,.06)" stroke-width="9" />
+    ${segs}
+  </svg>`;
+}
+
+function renderMacroBlock(macros, kcal) {
+  if (!macros) return '';
+  const display = isFinite(kcal) ? Math.round(kcal) : Math.round(macros.total);
+  const pct = (v) => Math.round((v / macros.total) * 100);
+  return `
+    <div class="macro-block">
+      <div class="macro-chart">
+        ${donutSVG(macros)}
+        <div class="macro-center">
+          <div class="macro-kcal">${display}</div>
+          <div class="macro-kcal-label">kcal</div>
+        </div>
+      </div>
+      <div class="macro-legend">
+        <div class="macro-row">
+          <span class="swatch" style="background:${MACRO_COLORS.fat}"></span>
+          <span class="swatch-label">Fat</span>
+          <span class="swatch-pct">${pct(macros.fCal)}%</span>
+          <span class="swatch-grams">${formatGrams(macros.fg)}</span>
+        </div>
+        <div class="macro-row">
+          <span class="swatch" style="background:${MACRO_COLORS.carbs}"></span>
+          <span class="swatch-label">Carbs</span>
+          <span class="swatch-pct">${pct(macros.cCal)}%</span>
+          <span class="swatch-grams">${formatGrams(macros.cg)}</span>
+        </div>
+        <div class="macro-row">
+          <span class="swatch" style="background:${MACRO_COLORS.protein}"></span>
+          <span class="swatch-label">Protein</span>
+          <span class="swatch-pct">${pct(macros.pCal)}%</span>
+          <span class="swatch-grams">${formatGrams(macros.pg)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function dvBar(label, value, dv, kind) {
+  if (!isFinite(value) || value < 0) return '';
+  const pct = (value / dv) * 100;
+  const fillPct = Math.min(pct, 100);
+  const color = dvColor(pct, kind);
+  const flag = pct >= 100 && kind === 'limit' ? ' ⚠' : '';
+  return `
+    <div class="dv-row">
+      <div class="dv-label">${esc(label)}</div>
+      <div class="dv-value">${formatGrams(value)}</div>
+      <div class="dv-bar-row">
+        <div class="dv-track">
+          <div class="dv-fill" style="width:${fillPct}%;background:${color}"></div>
+        </div>
+        <div class="dv-percent" style="color:${color}">${Math.round(pct)}%${flag}</div>
+      </div>
+    </div>
+  `;
+}
+
+function getMicros(n, mode, scale) {
+  const out = [];
+  for (const m of MICRONUTRIENTS) {
+    const v = nutVal(n, m.key, mode, scale);
+    if (!isFinite(v) || v <= 0) continue;
+    const display = v * m.mult; // convert g → mg or µg
+    const pct = (display / m.dv) * 100;
+    out.push({ label: m.label, value: display, unit: m.unit, pct, kind: m.kind });
+  }
+  return out;
+}
+
+function renderNutritionSection(p, mode) {
+  const n = p.nutriments || {};
+  const sq = num(p.serving_quantity);
+  const hasServing = isFinite(sq) && sq > 0;
+  const scale = hasServing ? sq / 100 : null;
+  const servingLabel = p.serving_size || (hasServing ? sq + ' g' : '');
+
+  const kcal = nutVal(n, 'energy-kcal', mode, scale);
+  const macros = calcMacros(n, mode, scale);
+
+  const dvDefs = [
+    ['Saturated fat', 'saturated-fat', DV.satFat, 'limit'],
+    ['Sugars',        'sugars',        DV.sugars, 'limit'],
+    ['Salt',          'salt',          DV.salt,   'limit'],
+    ['Total fat',     'fat',           DV.fat,    'neutral'],
+    ['Carbohydrates', 'carbohydrates', DV.carbs,  'neutral'],
+    ['Fiber',         'fiber',         DV.fiber,  'good'],
+    ['Protein',       'proteins',      DV.protein, 'good'],
+  ];
+  const dvBars = dvDefs.map(([label, key, dv, kind]) =>
+    dvBar(label, nutVal(n, key, mode, scale), dv, kind)
+  ).filter(Boolean).join('');
+
+  const micros = getMicros(n, mode, scale);
+
+  if (!isFinite(kcal) && !macros && !dvBars && micros.length === 0) {
+    return '';
+  }
+
+  const portionText = mode === 'serving'
+    ? `per serving${servingLabel ? ` (${esc(servingLabel)})` : ''}`
+    : 'per 100 g';
+
+  const toggle = hasServing ? `
+    <div class="serving-toggle">
+      <button class="${mode === 'serving' ? 'active' : ''}" onclick="setNutritionMode('serving')">Per serving</button>
+      <button class="${mode === '100g' ? 'active' : ''}" onclick="setNutritionMode('100g')">Per 100 g</button>
+    </div>
+  ` : '';
+
+  return `
+    <div class="section" id="nutrition-section">
+      <div class="section-title">Nutrition breakdown · ${esc(portionText)}</div>
+      ${toggle}
+      ${renderMacroBlock(macros, kcal)}
+      ${dvBars ? `<div class="dv-list">${dvBars}</div>
+      <div class="dv-footnote">% Daily Value (DV) tells you how much a nutrient contributes to a daily diet. 2,000 calories a day is used for general nutrition advice (US FDA reference).</div>` : ''}
+    </div>
+    ${micros.length ? `
+    <div class="section">
+      <div class="section-title">Vitamins &amp; minerals · ${esc(portionText)}</div>
+      <div class="micro-grid">
+        ${micros.map(m => `
+          <div class="micro-cell">
+            <div class="micro-label">${esc(m.label)}</div>
+            <div class="micro-row-vals">
+              <div class="micro-value">${formatUnit(m.value, m.unit)}</div>
+              <div class="micro-dv" style="color:${dvColor(m.pct, m.kind)}">${Math.round(m.pct)}% DV</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>` : ''}
+  `;
+}
+
+// Re-render whole food page when the per-serving / per-100g toggle is clicked.
+let currentFoodState = null;
+window.setNutritionMode = function (mode) {
+  if (currentFoodState) {
+    renderFoodProduct(currentFoodState.code, currentFoodState.product, mode);
+  }
+};
+
 // ---------- Render: Food ----------
-function renderFoodProduct(code, p) {
+function renderFoodProduct(code, p, mode) {
+  // Default mode: per-serving if serving size known, else per-100g
+  if (!mode) {
+    const sq = num(p.serving_quantity);
+    mode = (isFinite(sq) && sq > 0) ? 'serving' : '100g';
+  }
+  currentFoodState = { code, product: p, mode };
+
   const name = p.product_name || p.product_name_en || p.generic_name || 'Unnamed product';
   const brand = p.brands || '';
   const img = p.image_front_small_url || p.image_small_url || '';
@@ -786,10 +1373,11 @@ function renderFoodProduct(code, p) {
     <div class="result ${img ? 'has-image' : ''}">
       <div class="result-head">
         ${img ? `<img class="product-img" src="${esc(img)}" alt="" onerror="this.style.display='none'">` : ''}
-        <div class="barcode-num">▮▯▮▯ ${esc(code)}</div>
-        <div class="product-name">${esc(name)}</div>
+        <div class="barcode-num">${p._isPhotoIdentified ? '📷 PHOTO IDENTIFIED' : '▮▯▮▯ ' + esc(code)}</div>
+        <div class="product-name">${p._emoji ? p._emoji + ' ' : ''}${esc(name)}</div>
         ${brand ? `<div class="product-brand">${esc(brand)}</div>` : ''}
         <div class="category-tag">Food &amp; Beverage</div>
+        ${p._isPhotoIdentified ? '<div class="estimate-tag">⚠ Estimated values · not exact</div>' : ''}
       </div>
 
       <div class="scores">
@@ -830,7 +1418,7 @@ function renderFoodProduct(code, p) {
         </ul>
       </div>
 
-      ${renderNutrition(n)}
+      ${renderNutritionSection(p, mode)}
 
       ${p.ingredients_text ? `
       <div class="section">
@@ -919,32 +1507,6 @@ function buildFoodSummary(p, n, nutri, nova) {
   }
   if (nova === 4) qual += ' Heads up — it&rsquo;s classified ultra-processed.';
   return verdict + qual;
-}
-
-function renderNutrition(n) {
-  const rows = [
-    ['Energy', n['energy-kcal_100g'], 'kcal'],
-    ['Fat', n.fat_100g, 'g'],
-    ['Saturated', n['saturated-fat_100g'], 'g'],
-    ['Carbs', n.carbohydrates_100g, 'g'],
-    ['Sugars', n.sugars_100g, 'g'],
-    ['Fiber', n.fiber_100g, 'g'],
-    ['Protein', n.proteins_100g, 'g'],
-    ['Salt', n.salt_100g, 'g'],
-  ].map(([k, v, u]) => [k, num(v), u]).filter(([, v]) => !isNaN(v));
-  if (rows.length === 0) return '';
-  return `
-  <div class="section">
-    <div class="section-title">Nutrition (per 100g)</div>
-    <div class="nutri-grid">
-      ${rows.map(([k, v, u]) => `
-        <div class="nutri-cell">
-          <div class="nutri-key">${esc(k)}</div>
-          <div class="nutri-val">${v < 10 && v > 0 ? v.toFixed(1) : v.toFixed(0)}<small> ${esc(u)}</small></div>
-        </div>
-      `).join('')}
-    </div>
-  </div>`;
 }
 
 // ---------- Render: Beauty ----------
@@ -1202,6 +1764,216 @@ function showError(msg) {
   output.innerHTML = `<div class="error">${msg}</div>`;
   output.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ---------- Mode tabs & photo identification ----------
+const tabBarcode = $('tabBarcode');
+const tabPhoto = $('tabPhoto');
+const modeBarcode = $('modeBarcode');
+const modePhoto = $('modePhoto');
+const photoBtn = $('photoBtn');
+const photoInput = $('photoInput');
+const photoClearBtn = $('photoClearBtn');
+const photoPreview = $('photoPreview');
+const photoEmpty = $('photoEmpty');
+const photoLoading = $('photoLoading');
+const photoLoadingText = $('photoLoadingText');
+
+let currentMode = 'barcode';
+let visionModel = null;
+let lastPhotoDataUrl = null;
+
+function switchMode(mode) {
+  currentMode = mode;
+  tabBarcode.classList.toggle('active', mode === 'barcode');
+  tabPhoto.classList.toggle('active', mode === 'photo');
+  modeBarcode.style.display = mode === 'barcode' ? '' : 'none';
+  modePhoto.style.display = mode === 'photo' ? '' : 'none';
+  // Stop any running camera when leaving barcode mode
+  if (mode !== 'barcode' && codeReader) stopScanner();
+  // Clear output when switching modes
+  output.innerHTML = '';
+}
+
+tabBarcode.addEventListener('click', () => switchMode('barcode'));
+tabPhoto.addEventListener('click', () => switchMode('photo'));
+
+photoBtn.addEventListener('click', () => photoInput.click());
+photoInput.addEventListener('change', handlePhotoFile);
+photoClearBtn.addEventListener('click', clearPhoto);
+
+function clearPhoto() {
+  photoInput.value = '';
+  photoPreview.src = '';
+  photoPreview.style.display = 'none';
+  photoEmpty.style.display = '';
+  photoClearBtn.disabled = true;
+  output.innerHTML = '';
+  lastPhotoDataUrl = null;
+}
+
+function showPhotoLoading(text) {
+  photoLoading.style.display = '';
+  photoLoadingText.textContent = text;
+}
+function hidePhotoLoading() {
+  photoLoading.style.display = 'none';
+}
+
+async function handlePhotoFile(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    showError('Please choose an image file.');
+    return;
+  }
+  output.innerHTML = '';
+  const dataUrl = await fileToDataUrl(file);
+  lastPhotoDataUrl = dataUrl;
+  photoPreview.src = dataUrl;
+  photoPreview.style.display = '';
+  photoEmpty.style.display = 'none';
+  photoClearBtn.disabled = false;
+  try {
+    await identifyPhoto(dataUrl);
+  } catch (err) {
+    hidePhotoLoading();
+    showError(`<strong>Identification failed.</strong><br>${esc(err && err.message || String(err))}`);
+  }
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(new Error('Could not read file'));
+    r.readAsDataURL(file);
+  });
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('Failed to load ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureVisionModel() {
+  if (visionModel) return visionModel;
+  if (typeof tf === 'undefined') {
+    await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js');
+  }
+  if (typeof mobilenet === 'undefined') {
+    await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js');
+  }
+  if (typeof mobilenet === 'undefined' || !mobilenet.load) {
+    throw new Error('Vision model script loaded but mobilenet is unavailable.');
+  }
+  visionModel = await mobilenet.load();
+  return visionModel;
+}
+
+function loadImageElement(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Could not load image for analysis.'));
+    img.src = src;
+  });
+}
+
+async function identifyPhoto(dataUrl) {
+  const firstLoad = !visionModel;
+  showPhotoLoading(firstLoad ? 'Loading vision model (~17 MB, one time)…' : 'Identifying…');
+  const model = await ensureVisionModel();
+  if (firstLoad) showPhotoLoading('Identifying…');
+  const img = await loadImageElement(dataUrl);
+  const predictions = await model.classify(img, 10);
+  hidePhotoLoading();
+
+  // Map to known foods, keep best probability per food
+  const byFood = new Map();
+  for (const p of predictions) {
+    const foodKey = classNameToFoodKey(p.className);
+    if (!foodKey) continue;
+    const existing = byFood.get(foodKey);
+    if (!existing || p.probability > existing.probability) {
+      byFood.set(foodKey, { foodKey, probability: p.probability, className: p.className });
+    }
+  }
+  const ranked = [...byFood.values()].sort((a, b) => b.probability - a.probability);
+
+  if (ranked.length === 0) {
+    showUnrecognized(predictions, dataUrl);
+    return;
+  }
+  renderPredictions(ranked.slice(0, 3), dataUrl);
+}
+
+function renderPredictions(predictions, photoUrl) {
+  const top = predictions[0];
+  const rest = predictions.slice(1);
+  const cards = predictions.map((p, i) => {
+    const f = FOOD_DB[p.foodKey];
+    const cls = i === 0 ? 'prediction-card primary' : 'prediction-card';
+    return `
+      <button class="${cls}" onclick="confirmIdentifiedFood('${esc(p.foodKey)}')">
+        <div class="prediction-emoji">${f.emoji}</div>
+        <div class="prediction-info">
+          <div class="prediction-name">${esc(f.name)}</div>
+          <div class="prediction-confidence">${Math.round(p.probability * 100)}% confident</div>
+        </div>
+        <div class="prediction-arrow">→</div>
+      </button>
+    `;
+  }).join('');
+
+  output.innerHTML = `
+    <div class="predictions-card">
+      <div class="predictions-head">
+        ${photoUrl ? `<img class="predictions-photo" src="${esc(photoUrl)}" alt="">` : ''}
+        <div class="predictions-title">What's in your photo?</div>
+        <div class="predictions-q">Tap to confirm</div>
+      </div>
+      <div class="predictions-list">
+        ${cards}
+      </div>
+      <div class="predictions-footer">
+        Not it? Try a clearer photo with the food well-lit and centered, or scan a barcode for packaged items.
+      </div>
+    </div>
+  `;
+  output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showUnrecognized(predictions, photoUrl) {
+  const topGuesses = predictions.slice(0, 3).map(p => esc(p.className.split(',')[0])).join(', ');
+  output.innerHTML = `
+    <div class="predictions-card">
+      <div class="predictions-head">
+        ${photoUrl ? `<img class="predictions-photo" src="${esc(photoUrl)}" alt="">` : ''}
+        <div class="predictions-title">No recognized food</div>
+        <div class="predictions-q">Couldn't identify this one</div>
+      </div>
+      <div class="predictions-footer">
+        The vision model guessed <em>${topGuesses}</em> — none in our food database. Try a clearer, well-lit photo of a single food item, or scan its barcode if it's packaged.
+      </div>
+    </div>
+  `;
+  output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+window.confirmIdentifiedFood = function (foodKey) {
+  const product = foodToProduct(foodKey, lastPhotoDataUrl);
+  if (!product) {
+    showError('Unknown food: ' + esc(foodKey));
+    return;
+  }
+  renderFoodProduct('photo-' + foodKey, product);
+};
 
 window.addEventListener('beforeunload', stopScanner);
 document.addEventListener('visibilitychange', () => {
